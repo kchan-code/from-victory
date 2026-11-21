@@ -202,6 +202,12 @@ export type UseClipPlayerResult = {
   play: () => void;
   /** Suspend playback. Noop if not playing. */
   pause: () => void;
+  /** Move playback to an absolute session position (seconds). */
+  seekTo: (seconds: number) => void;
+  /** Skip backward 15 seconds (clamped at session start). */
+  skipBackward15: () => void;
+  /** Skip forward 15 seconds (clamped at session end). */
+  skipForward15: () => void;
   playing: boolean;
   /** Session elapsed time in seconds, driven by rAF. */
   elapsedSec: number;
@@ -213,6 +219,8 @@ export type UseClipPlayerResult = {
   error: string | null;
   /** The assembled phase timeline, available once ready. Null until then. */
   timeline: AssembledTimeline | null;
+  /** True when this session has multiple clip steps for track-to-track navigation. */
+  hasStepNavigation: boolean;
 };
 
 // ---------------------------------------------------------------------------
@@ -320,8 +328,13 @@ export function useClipPlayer({
   const intendedPlayingRef = useRef(false);
   // Timeline ref for use inside the ended handler without stale closure.
   const timelineRef = useRef<AssembledTimeline | null>(null);
+  // Total duration mirror for seek helpers + Media Session position state.
+  const totalSecRef = useRef(0);
+  totalSecRef.current = totalSec;
   // clipsRef retained (unused in playback but consistent with original structure).
   const clipsRef = useRef<ResolvedClip[]>([]);
+  // Per-clip step starts (seconds from session start), used by previous/next track.
+  const stepStartSecRef = useRef<number[]>([]);
 
   // FV-266 — per-session dialed-in pre-practice opener variation. Picked once
   // per hook mount (lazy-init) so a session that re-resolves the playlist
@@ -390,6 +403,21 @@ export function useClipPlayer({
           }
         }
       }
+      try {
+        const nav = navigator as NavigatorWithMediaSession;
+        if (nav.mediaSession?.setPositionState) {
+          const duration = totalSecRef.current > 0 ? totalSecRef.current : audio.duration;
+          if (Number.isFinite(duration) && duration > 0) {
+            nav.mediaSession.setPositionState({
+              duration,
+              position: Math.min(duration, Math.max(0, audio.currentTime)),
+              playbackRate: audio.paused ? 0 : 1,
+            });
+          }
+        }
+      } catch {
+        // Non-fatal — some browsers expose MediaSession without position support.
+      }
       rafRef.current = requestAnimationFrame(loop);
     };
     rafRef.current = requestAnimationFrame(loop);
@@ -434,10 +462,62 @@ export function useClipPlayer({
     syncMediaSessionPosition(audio);
   }, [syncMediaSessionPosition]);
 
+  const seekTo = useCallback((seconds: number) => {
+    const audio = audioRef.current;
+    if (!audio || audio instanceof NativeNarrationPlayer) return;
+    if (!Number.isFinite(seconds)) return;
+    const timelineDuration = timelineRef.current?.totalDurationSec ?? 0;
+    const duration = Number.isFinite(audio.duration) && audio.duration > 0
+      ? audio.duration
+      : (Number.isFinite(timelineDuration) && timelineDuration > 0 ? timelineDuration : 0);
+    const maxDuration = duration > 0 ? duration : seconds;
+    const bounded = Math.min(maxDuration, Math.max(0, seconds));
+    audio.currentTime = bounded;
+    reconcilePlaybackState(audio);
+  }, [reconcilePlaybackState]);
+
+  const skipBy = useCallback((deltaSec: number) => {
+    const audio = audioRef.current;
+    if (!audio || audio instanceof NativeNarrationPlayer || !Number.isFinite(deltaSec)) return;
+    seekTo(audio.currentTime + deltaSec);
+  }, [seekTo]);
+
+  const seekToAdjacentStep = useCallback((direction: -1 | 1) => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    const starts = stepStartSecRef.current;
+    if (starts.length < 2) return;
+    const current = Math.max(0, audio.currentTime);
+    if (direction < 0) {
+      let target = 0;
+      for (const start of starts) {
+        if (start < current - 0.25) target = start;
+      }
+      seekTo(target);
+      return;
+    }
+    for (const start of starts) {
+      if (start > current + 0.25) {
+        seekTo(start);
+        return;
+      }
+    }
+    const duration = totalSecRef.current > 0 ? totalSecRef.current : audio.duration;
+    seekTo(duration);
+  }, [seekTo]);
+
+  const skipBackward15 = useCallback(() => {
+    skipBy(-15);
+  }, [skipBy]);
+
+  const skipForward15 = useCallback(() => {
+    skipBy(15);
+  }, [skipBy]);
+
   // ── MediaSession wiring ──
   // Registers lock-screen / Control Center title + play/pause handlers.
   // Feature-detected: absent on SSR and older iOS.
-  const wireMediaSession = useCallback((sessionTitle: string) => {
+  const wireMediaSession = useCallback((sessionTitle: string, hasStepNavigation: boolean) => {
     const nav = navigator as NavigatorWithMediaSession;
     if (!nav.mediaSession) return;
 
@@ -464,7 +544,15 @@ export function useClipPlayer({
     // play()/pause() callbacks so intendedPlayingRef stays consistent. Without
     // this, a lock-screen pause could be auto-resumed by the visibilitychange
     // nudge (which keys on intent), and a lock-screen play wouldn't be.
-    nav.mediaSession.setActionHandler("play", () => {
+    const registerHandler = (action: MediaSessionAction, handler: MediaSessionActionHandler | null) => {
+      try {
+        nav.mediaSession?.setActionHandler(action, handler);
+      } catch {
+        // Unsupported action on this browser/OS variant.
+      }
+    };
+
+    registerHandler("play", () => {
       const audio = audioRef.current;
       if (!audio || completedRef.current || audio.ended) return;
       intendedPlayingRef.current = true;
@@ -474,7 +562,7 @@ export function useClipPlayer({
         intendedPlayingRef.current = false;
       });
     });
-    nav.mediaSession.setActionHandler("pause", () => {
+    registerHandler("pause", () => {
       const audio = audioRef.current;
       if (!audio || completedRef.current || audio.ended) return;
       intendedPlayingRef.current = false;
@@ -484,43 +572,44 @@ export function useClipPlayer({
         reconcilePlaybackState(audio);
       }
     });
-    nav.mediaSession.setActionHandler("seekbackward", (details) => {
+    registerHandler("seekbackward", (details) => {
       const audio = audioRef.current;
-      if (!audio || audio instanceof NativeNarrationPlayer || completedRef.current || audio.ended) return;
+      if (!audio || completedRef.current || audio.ended) return;
       const offset = Number.isFinite(details?.seekOffset) && (details?.seekOffset ?? 0) > 0
         ? details.seekOffset!
         : MEDIA_SESSION_SEEK_STEP_SECONDS;
-      audio.currentTime = Math.max(0, audio.currentTime - offset);
-      reconcilePlaybackState(audio);
+      skipBy(-offset);
     });
-    nav.mediaSession.setActionHandler("seekforward", (details) => {
+    registerHandler("seekforward", (details) => {
       const audio = audioRef.current;
-      if (!audio || audio instanceof NativeNarrationPlayer || completedRef.current || audio.ended) return;
+      if (!audio || completedRef.current || audio.ended) return;
       const offset = Number.isFinite(details?.seekOffset) && (details?.seekOffset ?? 0) > 0
         ? details.seekOffset!
         : MEDIA_SESSION_SEEK_STEP_SECONDS;
-      const timelineDuration = timelineRef.current?.totalDurationSec ?? 0;
-      const duration = Number.isFinite(audio.duration) && audio.duration > 0
-        ? audio.duration
-        : (Number.isFinite(timelineDuration) && timelineDuration > 0 ? timelineDuration : 0);
-      const nextTime = audio.currentTime + offset;
-      audio.currentTime = duration > 0 ? Math.min(duration, nextTime) : Math.max(0, nextTime);
-      reconcilePlaybackState(audio);
+      skipBy(offset);
     });
-    nav.mediaSession.setActionHandler("seekto", (details) => {
+    registerHandler("seekto", (details) => {
       const audio = audioRef.current;
-      if (!audio || audio instanceof NativeNarrationPlayer || completedRef.current || audio.ended) return;
+      if (!audio || completedRef.current || audio.ended) return;
       if (!Number.isFinite(details?.seekTime)) return;
-      const timelineDuration = timelineRef.current?.totalDurationSec ?? 0;
-      const duration = Number.isFinite(audio.duration) && audio.duration > 0
-        ? audio.duration
-        : (Number.isFinite(timelineDuration) && timelineDuration > 0 ? timelineDuration : 0);
-      const maxDuration = duration > 0 ? duration : details.seekTime!;
-      audio.currentTime = Math.max(0, Math.min(maxDuration, details.seekTime!));
-      reconcilePlaybackState(audio);
+      seekTo(details.seekTime!);
     });
+    registerHandler("previoustrack", hasStepNavigation
+      ? () => {
+        const audio = audioRef.current;
+        if (!audio || completedRef.current || audio.ended) return;
+        seekToAdjacentStep(-1);
+      }
+      : null);
+    registerHandler("nexttrack", hasStepNavigation
+      ? () => {
+        const audio = audioRef.current;
+        if (!audio || completedRef.current || audio.ended) return;
+        seekToAdjacentStep(1);
+      }
+      : null);
     syncMediaSessionPosition(audioRef.current);
-  }, [reconcilePlaybackState, syncMediaSessionPosition]);
+  }, [hasStepNavigation, reconcilePlaybackState, seekTo, seekToAdjacentStep, skipBy, syncMediaSessionPosition]);
 
   // ── Phase 0: decode-on-mount ──
   // Fetch manifest → resolve playlist → fetch + decode all clips → assemble WAV.
@@ -651,6 +740,16 @@ export function useClipPlayer({
       if (cancelled) return;
 
       clipsRef.current = clips;
+      stepStartSecRef.current = clips.reduce<number[]>((starts, clip, index) => {
+        if (index === 0) {
+          starts.push(0);
+          return starts;
+        }
+        const previousClip = clips[index - 1];
+        const previousStart = starts[index - 1] ?? 0;
+        starts.push(previousStart + (previousClip?.durationSec ?? 0));
+        return starts;
+      }, []);
       // FV-552 — a fresh resolve starts a new (potential) playback attempt;
       // rememberTruthSlug fires once playback reaches the truth clip (rAF
       // loop above), not here. Reset the guard so a re-resolve mid-flow
@@ -945,7 +1044,7 @@ export function useClipPlayer({
         });
       } else {
         // Leave external music's lock-screen controls intact on native.
-        wireMediaSession(practice ? "Pre-Practice" : "Pregame");
+        wireMediaSession(practice ? "Pre-Practice" : "Pregame", stepStartSecRef.current.length > 1);
       }
 
       reconcilePlaybackState(audio);
@@ -1100,6 +1199,8 @@ export function useClipPlayer({
           nav.mediaSession.setActionHandler("seekbackward", null);
           nav.mediaSession.setActionHandler("seekforward", null);
           nav.mediaSession.setActionHandler("seekto", null);
+          nav.mediaSession.setActionHandler("previoustrack", null);
+          nav.mediaSession.setActionHandler("nexttrack", null);
         }
       } catch {
         // Non-fatal — navigator may not be available in all teardown contexts.
@@ -1112,11 +1213,15 @@ export function useClipPlayer({
     nativeNarrationPlayer,
     play,
     pause,
+    seekTo,
+    skipBackward15,
+    skipForward15,
     playing,
     elapsedSec,
     totalSec,
     completed,
     error,
     timeline,
+    hasStepNavigation: stepStartSecRef.current.length > 1,
   };
 }

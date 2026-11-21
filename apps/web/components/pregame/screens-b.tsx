@@ -1570,6 +1570,13 @@ export function AudioSessionScreen({
   const renderPlaying = isClipActive ? clipPlayer.playing : playing;
   const renderCompleted = isClipActive ? clipPlayer.completed : completed;
 
+  const formatClock = (seconds: number): string => {
+    const bounded = Math.max(0, Math.floor(seconds));
+    const mins = Math.floor(bounded / 60);
+    const secs = bounded % 60;
+    return `${mins}:${String(secs).padStart(2, "0")}`;
+  };
+
   const remaining = Math.max(0, renderTotal - renderElapsed);
   const mm = Math.floor(remaining / 60);
   const ss = Math.floor(remaining % 60);
@@ -1932,6 +1939,52 @@ export function AudioSessionScreen({
             <NarrationVolumeControl player={clipPlayer.nativeNarrationPlayer} placement="transport" />
           )}
         </div>
+
+        {isClipActive && !renderCompleted && (
+          <div className="rounded-[12px] border border-hairline px-3 py-3">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-cream/55">
+                Position
+              </span>
+              <span className="font-mono text-[11px] tracking-[0.14em] text-cream/75">
+                {formatClock(renderElapsed)} / {formatClock(renderTotal)}
+              </span>
+            </div>
+            <input
+              type="range"
+              min={0}
+              max={Math.max(0, Math.floor(renderTotal))}
+              step={1}
+              value={Math.min(Math.floor(renderElapsed), Math.max(0, Math.floor(renderTotal)))}
+              onChange={(event) => {
+                clipPlayer.seekTo(Number(event.currentTarget.value));
+              }}
+              aria-label="Scrub guided session position"
+              disabled={clipLoading}
+              className="block min-h-[44px] w-full cursor-pointer accent-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 disabled:opacity-50"
+            />
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={clipPlayer.skipBackward15}
+                disabled={clipLoading}
+                aria-label="Skip back 15 seconds"
+                className="min-h-[44px] rounded-pill border border-hairline px-3 py-2.5 font-heading text-[13px] font-semibold text-cream/80 transition-colors duration-fast hover:text-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 disabled:opacity-50"
+              >
+                -15s
+              </button>
+              <button
+                type="button"
+                onClick={clipPlayer.skipForward15}
+                disabled={clipLoading}
+                aria-label="Skip forward 15 seconds"
+                className="min-h-[44px] rounded-pill border border-hairline px-3 py-2.5 font-heading text-[13px] font-semibold text-cream/80 transition-colors duration-fast hover:text-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 disabled:opacity-50"
+              >
+                +15s
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Accessible alternative for deaf/HoH athletes or loud environments.
             Only shown in audio mode — once switched to text mode this row

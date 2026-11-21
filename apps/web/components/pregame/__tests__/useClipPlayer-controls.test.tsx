@@ -1,0 +1,239 @@
+/** @vitest-environment jsdom */
+import { act, cleanup, renderHook } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import { useClipPlayer } from "@/components/pregame/useClipPlayer";
+
+vi.mock("@/components/pregame/audio-playlist", () => ({
+  manifestUrl: () => "/audio/pregame/clips/manifest.test.json",
+  resolvePlaylist: () => [
+    { slug: "opening", url: "/audio/pregame/clips/opening.mp3", durationSec: 20, phases: [] },
+    { slug: "reset", url: "/audio/pregame/clips/reset.mp3", durationSec: 10, phases: [] },
+  ],
+  resolvePracticePlaylist: () => null,
+  buildAssembledTimeline: () => ({ totalDurationSec: 30, phases: [] }),
+  DIALED_IN_OPENER_VARIATIONS: ["pp-opener-dialed-in"],
+}));
+vi.mock("@/components/pregame/audio/encode-wav", () => ({
+  assembleWavBlobWithBed: () => new Blob([new Uint8Array(44)]),
+}));
+vi.mock("@/components/pregame/audio/beds", () => ({
+  getBed: () => undefined,
+  BED_MIX_GAIN: 0.35,
+}));
+
+const OPTIONS = {
+  need: "Confidence",
+  position: "Forward",
+  adversity: "Benched in the third",
+} as const;
+
+class FakeAudio extends EventTarget {
+  currentTime = 0;
+  duration = 30;
+  paused = true;
+  ended = false;
+  preload = "auto";
+  src = "";
+  hidden = true;
+
+  play = vi.fn(async () => {
+    this.paused = false;
+    this.dispatchEvent(new Event("play"));
+  });
+
+  pause = vi.fn(() => {
+    this.paused = true;
+    this.dispatchEvent(new Event("pause"));
+  });
+
+  setAttribute = vi.fn();
+  removeAttribute = vi.fn();
+  remove = vi.fn();
+}
+
+type ActionName =
+  | "play"
+  | "pause"
+  | "seekbackward"
+  | "seekforward"
+  | "seekto"
+  | "previoustrack"
+  | "nexttrack";
+
+let audioInstances: FakeAudio[] = [];
+let actionHandlers: Partial<Record<ActionName, MediaSessionActionHandler | null>>;
+let setPositionState: ReturnType<typeof vi.fn>;
+let originalCreateObjectURL: typeof URL.createObjectURL;
+let originalRevokeObjectURL: typeof URL.revokeObjectURL;
+
+async function flush(times = 25): Promise<void> {
+  for (let i = 0; i < times; i++) {
+    // eslint-disable-next-line no-await-in-loop -- deliberate microtask drain
+    await Promise.resolve();
+  }
+}
+
+beforeEach(() => {
+  audioInstances = [];
+  actionHandlers = {};
+  setPositionState = vi.fn();
+
+  class FakeAudioContext {
+    decodeAudioData(): Promise<AudioBuffer> {
+      return Promise.resolve({
+        sampleRate: 24000,
+        getChannelData: () => new Float32Array(0),
+      } as unknown as AudioBuffer);
+    }
+    close(): Promise<void> {
+      return Promise.resolve();
+    }
+  }
+
+  vi.stubGlobal("AudioContext", FakeAudioContext);
+  vi.stubGlobal("requestAnimationFrame", vi.fn(() => 1));
+  vi.stubGlobal("cancelAnimationFrame", vi.fn());
+  vi.stubGlobal("fetch", vi.fn((url: string) => {
+    if (url.includes("manifest")) {
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({ clips: {} }),
+      } as unknown as Response);
+    }
+    return Promise.resolve({
+      ok: true,
+      arrayBuffer: async () => new ArrayBuffer(8),
+    } as unknown as Response);
+  }));
+  vi.stubGlobal("Audio", vi.fn(() => {
+    const audio = new FakeAudio();
+    audioInstances.push(audio);
+    return audio as unknown as HTMLAudioElement;
+  }));
+
+  const mediaSession = {
+    metadata: null,
+    setActionHandler: vi.fn((action: ActionName, handler: MediaSessionActionHandler | null) => {
+      actionHandlers[action] = handler;
+    }),
+    setPositionState,
+  };
+  Object.defineProperty(window.navigator, "mediaSession", {
+    configurable: true,
+    value: mediaSession,
+  });
+
+  originalCreateObjectURL = URL.createObjectURL;
+  originalRevokeObjectURL = URL.revokeObjectURL;
+  URL.createObjectURL = vi.fn(() => "blob:fv-controls");
+  URL.revokeObjectURL = vi.fn();
+});
+
+afterEach(() => {
+  cleanup();
+  URL.createObjectURL = originalCreateObjectURL;
+  URL.revokeObjectURL = originalRevokeObjectURL;
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
+});
+
+describe("useClipPlayer controls + Media Session handlers (FV-781)", () => {
+  it("clamps skip backward/forward, supports scrubbing, and preserves position across pause/resume", async () => {
+    const { result } = renderHook(() => useClipPlayer(OPTIONS));
+    await act(flush);
+    expect(result.current.ready).toBe(true);
+    expect(audioInstances).toHaveLength(1);
+
+    const audio = audioInstances[0];
+    expect(audio).toBeDefined();
+
+    await act(async () => {
+      result.current.seekTo(4);
+    });
+    await act(async () => {
+      result.current.skipBackward15();
+    });
+    expect(audio?.currentTime).toBe(0);
+    expect(result.current.elapsedSec).toBe(0);
+
+    await act(async () => {
+      result.current.seekTo(28);
+      result.current.skipForward15();
+    });
+    expect(audio?.currentTime).toBe(30);
+    expect(result.current.elapsedSec).toBe(30);
+
+    await act(async () => {
+      result.current.seekTo(12);
+    });
+    expect(audio?.currentTime).toBe(12);
+    expect(result.current.elapsedSec).toBe(12);
+
+    await act(async () => {
+      result.current.play();
+    });
+    await act(async () => {
+      result.current.pause();
+    });
+    const pausedAt = audio?.currentTime ?? -1;
+    await act(async () => {
+      result.current.play();
+    });
+    expect(audio?.currentTime).toBe(pausedAt);
+  });
+
+  it("wires media action handlers to the same transport behavior and updates position state", async () => {
+    const { result } = renderHook(() => useClipPlayer(OPTIONS));
+    await act(flush);
+    const audio = audioInstances[0];
+    expect(audio).toBeDefined();
+
+    expect(typeof actionHandlers.play).toBe("function");
+    expect(typeof actionHandlers.pause).toBe("function");
+    expect(typeof actionHandlers.seekbackward).toBe("function");
+    expect(typeof actionHandlers.seekforward).toBe("function");
+    expect(typeof actionHandlers.seekto).toBe("function");
+    expect(typeof actionHandlers.previoustrack).toBe("function");
+    expect(typeof actionHandlers.nexttrack).toBe("function");
+    expect(result.current.hasStepNavigation).toBe(true);
+
+    await act(async () => {
+      result.current.seekTo(10);
+      actionHandlers.seekforward?.({ action: "seekforward", seekOffset: 15 } as any);
+    });
+    expect(audio?.currentTime).toBe(25);
+
+    await act(async () => {
+      actionHandlers.seekbackward?.({ action: "seekbackward", seekOffset: 15 } as any);
+    });
+    expect(audio?.currentTime).toBe(10);
+
+    await act(async () => {
+      actionHandlers.seekto?.({ action: "seekto", seekTime: 22 } as any);
+    });
+    expect(audio?.currentTime).toBe(22);
+
+    await act(async () => {
+      actionHandlers.previoustrack?.({ action: "previoustrack" } as any);
+    });
+    expect(audio?.currentTime).toBe(20);
+
+    await act(async () => {
+      actionHandlers.nexttrack?.({ action: "nexttrack" } as any);
+    });
+    expect(audio?.currentTime).toBe(30);
+
+    await act(async () => {
+      actionHandlers.play?.({ action: "play" } as any);
+    });
+    expect(result.current.playing).toBe(true);
+
+    await act(async () => {
+      actionHandlers.pause?.({ action: "pause" } as any);
+    });
+    expect(result.current.playing).toBe(false);
+
+    expect(setPositionState).toHaveBeenCalled();
+  });
+});
