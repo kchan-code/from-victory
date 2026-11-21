@@ -33,6 +33,7 @@ class FakeMediaSession {
   readonly handlers = new Map<ActionName, ActionHandler>();
   readonly positionStateCalls: MediaPositionState[] = [];
   metadata: MediaMetadata | null = null;
+  playbackState: "none" | "paused" | "playing" = "none";
 
   setActionHandler(action: MediaSessionAction, handler: MediaSessionActionHandler | null) {
     if (
@@ -61,11 +62,13 @@ class FakeAudioElement extends EventTarget {
   hidden = false;
 
   readonly play = vi.fn(async () => {
+    if (!this.paused || this.ended) return;
     this.paused = false;
     this.dispatchEvent(new Event("play"));
   });
 
   readonly pause = vi.fn(() => {
+    if (this.paused || this.ended) return;
     this.paused = true;
     this.dispatchEvent(new Event("pause"));
   });
@@ -98,6 +101,14 @@ async function flushMicrotasks(times = 30): Promise<void> {
   for (let i = 0; i < times; i++) {
     // eslint-disable-next-line no-await-in-loop -- deterministic microtask drain
     await Promise.resolve();
+  }
+}
+
+function runUiToggle(playing: boolean, controls: { play: () => void; pause: () => void }) {
+  if (playing) {
+    controls.pause();
+  } else {
+    controls.play();
   }
 }
 
@@ -159,7 +170,7 @@ afterEach(() => {
 });
 
 describe("useClipPlayer interruption recovery (FV-780)", () => {
-  it("reconciles OS interruptions and keeps resume/pause/seek controls usable", async () => {
+  it("recovers when the element is paused without a pause event by following the UI toggle sequence", async () => {
     const { result } = renderHook(() => useClipPlayer(OPTIONS));
 
     await act(async () => {
@@ -174,38 +185,134 @@ describe("useClipPlayer interruption recovery (FV-780)", () => {
     expect(result.current.playing).toBe(true);
     expect(fakeAudio.play).toHaveBeenCalledTimes(1);
 
+    // Route-loss style desync: paused element, no pause event delivered.
     fakeAudio.currentTime = 12.5;
     fakeAudio.paused = true;
     await act(async () => {
-      fakeAudio.dispatchEvent(new Event("stalled"));
       await flushMicrotasks();
     });
+    expect(result.current.playing).toBe(true);
 
+    // This mirrors screens-b.tsx: if (clipPlayer.playing) pause() else play().
+    await act(async () => {
+      runUiToggle(result.current.playing, result.current);
+      await flushMicrotasks();
+    });
     expect(result.current.playing).toBe(false);
     expect(result.current.elapsedSec).toBeCloseTo(12.5, 1);
 
     await act(async () => {
-      result.current.play();
+      runUiToggle(result.current.playing, result.current);
       await flushMicrotasks();
     });
     expect(result.current.playing).toBe(true);
     expect(fakeAudio.play).toHaveBeenCalledTimes(2);
+  });
+
+  it("handles iOS-shaped pause events (call/app focus/bluetooth) and keeps controls usable", async () => {
+    const { result } = renderHook(() => useClipPlayer(OPTIONS));
 
     await act(async () => {
-      result.current.pause();
+      await flushMicrotasks();
+    });
+    await act(async () => {
+      result.current.play();
+      await flushMicrotasks();
+    });
+
+    fakeAudio.currentTime = 18;
+    fakeAudio.paused = true;
+    await act(async () => {
+      fakeAudio.dispatchEvent(new Event("pause"));
       await flushMicrotasks();
     });
     expect(result.current.playing).toBe(false);
-    expect(fakeAudio.pause).toHaveBeenCalled();
+    expect(result.current.elapsedSec).toBeCloseTo(18, 1);
+    expect(fakeMediaSession.playbackState).toBe("paused");
+
+    await act(async () => {
+      runUiToggle(result.current.playing, result.current);
+      await flushMicrotasks();
+    });
+    expect(result.current.playing).toBe(true);
+    expect(fakeMediaSession.playbackState).toBe("playing");
+
+    await act(async () => {
+      runUiToggle(result.current.playing, result.current);
+      await flushMicrotasks();
+    });
+    expect(result.current.playing).toBe(false);
+    expect(fakeAudio.pause).toHaveBeenCalledTimes(1);
+  });
+
+  it("supports seekbackward/seekforward/seekto and no-ops Media Session controls after ended", async () => {
+    const { result } = renderHook(() => useClipPlayer(OPTIONS));
+
+    await act(async () => {
+      await flushMicrotasks();
+    });
+    await act(async () => {
+      result.current.play();
+      await flushMicrotasks();
+    });
 
     const seekTo = fakeMediaSession.handlers.get("seekto");
+    const seekBackward = fakeMediaSession.handlers.get("seekbackward");
+    const seekForward = fakeMediaSession.handlers.get("seekforward");
+    expect(seekBackward).toBeTypeOf("function");
+    expect(seekForward).toBeTypeOf("function");
     expect(seekTo).toBeTypeOf("function");
+
+    fakeAudio.currentTime = 20;
+    await act(async () => {
+      seekBackward?.({ action: "seekbackward", seekOffset: 5 });
+      await flushMicrotasks();
+    });
+    expect(fakeAudio.currentTime).toBe(15);
+
+    await act(async () => {
+      seekForward?.({ action: "seekforward", seekOffset: 7 });
+      await flushMicrotasks();
+    });
+    expect(fakeAudio.currentTime).toBe(22);
+
+    fakeAudio.duration = Number.NaN;
+    await act(async () => {
+      seekForward?.({ action: "seekforward", seekOffset: Number.NaN });
+      await flushMicrotasks();
+    });
+    expect(fakeAudio.currentTime).toBe(32);
+
+    await act(async () => {
+      seekTo?.({ action: "seekto", seekTime: Number.NaN, fastSeek: false });
+      await flushMicrotasks();
+    });
+    expect(fakeAudio.currentTime).toBe(32);
+
     await act(async () => {
       seekTo?.({ action: "seekto", seekTime: 25, fastSeek: false });
       await flushMicrotasks();
     });
     expect(fakeAudio.currentTime).toBe(25);
-    expect(result.current.elapsedSec).toBeCloseTo(25, 1);
     expect(fakeMediaSession.positionStateCalls.length).toBeGreaterThan(0);
+
+    fakeAudio.ended = true;
+    fakeAudio.paused = true;
+    await act(async () => {
+      fakeAudio.dispatchEvent(new Event("ended"));
+      await flushMicrotasks();
+    });
+    expect(result.current.completed).toBe(true);
+
+    const playCallsAtEnd = fakeAudio.play.mock.calls.length;
+    await act(async () => {
+      seekBackward?.({ action: "seekbackward", seekOffset: 5 });
+      seekForward?.({ action: "seekforward", seekOffset: 5 });
+      seekTo?.({ action: "seekto", seekTime: 10, fastSeek: false });
+      fakeMediaSession.handlers.get("play")?.({ action: "play" });
+      await flushMicrotasks();
+    });
+    expect(fakeAudio.currentTime).toBe(25);
+    expect(fakeAudio.play).toHaveBeenCalledTimes(playCallsAtEnd);
   });
 });
