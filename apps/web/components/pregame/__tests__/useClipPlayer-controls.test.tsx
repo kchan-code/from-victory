@@ -28,30 +28,6 @@ const OPTIONS = {
   adversity: "Benched in the third",
 } as const;
 
-class FakeAudio extends EventTarget {
-  currentTime = 0;
-  duration = 30;
-  paused = true;
-  ended = false;
-  preload = "auto";
-  src = "";
-  hidden = true;
-
-  play = vi.fn(async () => {
-    this.paused = false;
-    this.dispatchEvent(new Event("play"));
-  });
-
-  pause = vi.fn(() => {
-    this.paused = true;
-    this.dispatchEvent(new Event("pause"));
-  });
-
-  setAttribute = vi.fn();
-  removeAttribute = vi.fn();
-  remove = vi.fn();
-}
-
 type ActionName =
   | "play"
   | "pause"
@@ -61,7 +37,7 @@ type ActionName =
   | "previoustrack"
   | "nexttrack";
 
-let audioInstances: FakeAudio[] = [];
+let audioInstances: HTMLAudioElement[] = [];
 let actionHandlers: Partial<Record<ActionName, MediaSessionActionHandler | null>>;
 let setPositionState: ReturnType<typeof vi.fn>;
 let originalCreateObjectURL: typeof URL.createObjectURL;
@@ -72,6 +48,42 @@ async function flush(times = 25): Promise<void> {
     // eslint-disable-next-line no-await-in-loop -- deliberate microtask drain
     await Promise.resolve();
   }
+}
+
+function createFakeAudioElement(): HTMLAudioElement {
+  const audio = document.createElement("audio");
+  let time = 0;
+  let paused = true;
+  let ended = false;
+
+  Object.defineProperty(audio, "duration", { configurable: true, value: 30 });
+  Object.defineProperty(audio, "currentTime", {
+    configurable: true,
+    get: () => time,
+    set: (value: number) => { time = Number.isFinite(value) ? value : time; },
+  });
+  Object.defineProperty(audio, "paused", {
+    configurable: true,
+    get: () => paused,
+  });
+  Object.defineProperty(audio, "ended", {
+    configurable: true,
+    get: () => ended,
+  });
+  audio.play = vi.fn(async () => {
+    paused = false;
+    ended = false;
+    audio.dispatchEvent(new Event("play"));
+  });
+  audio.pause = vi.fn(() => {
+    paused = true;
+    audio.dispatchEvent(new Event("pause"));
+  });
+  audio.remove = vi.fn(() => {
+    ended = true;
+    if (audio.parentNode) audio.parentNode.removeChild(audio);
+  });
+  return audio;
 }
 
 beforeEach(() => {
@@ -106,11 +118,13 @@ beforeEach(() => {
       arrayBuffer: async () => new ArrayBuffer(8),
     } as unknown as Response);
   }));
-  vi.stubGlobal("Audio", vi.fn(() => {
-    const audio = new FakeAudio();
+  function FakeAudioCtor(this: unknown) {
+    const audio = createFakeAudioElement();
     audioInstances.push(audio);
     return audio as unknown as HTMLAudioElement;
-  }));
+  }
+  vi.stubGlobal("Audio", FakeAudioCtor as unknown as typeof Audio);
+  Reflect.deleteProperty(window as Window & { Capacitor?: unknown }, "Capacitor");
 
   const mediaSession = {
     metadata: null,
@@ -142,6 +156,7 @@ describe("useClipPlayer controls + Media Session handlers (FV-781)", () => {
   it("clamps skip backward/forward, supports scrubbing, and preserves position across pause/resume", async () => {
     const { result } = renderHook(() => useClipPlayer(OPTIONS));
     await act(flush);
+    expect(result.current.error).toBeNull();
     expect(result.current.ready).toBe(true);
     expect(audioInstances).toHaveLength(1);
 
@@ -186,6 +201,7 @@ describe("useClipPlayer controls + Media Session handlers (FV-781)", () => {
   it("wires media action handlers to the same transport behavior and updates position state", async () => {
     const { result } = renderHook(() => useClipPlayer(OPTIONS));
     await act(flush);
+    expect(result.current.error).toBeNull();
     const audio = audioInstances[0];
     expect(audio).toBeDefined();
 
