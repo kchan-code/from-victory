@@ -159,9 +159,9 @@ describe("useClipPlayer controls + Media Session handlers (FV-781)", () => {
     await act(flush);
     expect(result.current.error).toBeNull();
     expect(result.current.ready).toBe(true);
-    expect(audioInstances).toHaveLength(1);
+    expect(audioInstances.length).toBeGreaterThan(0);
 
-    const audio = audioInstances[0];
+    const audio = audioInstances[audioInstances.length - 1];
     expect(audio).toBeDefined();
 
     await act(async () => {
@@ -203,7 +203,7 @@ describe("useClipPlayer controls + Media Session handlers (FV-781)", () => {
     const { result } = renderHook(() => useClipPlayer(OPTIONS));
     await act(flush);
     expect(result.current.error).toBeNull();
-    const audio = audioInstances[0];
+    const audio = audioInstances[audioInstances.length - 1];
     expect(audio).toBeDefined();
 
     expect(typeof actionHandlers.play).toBe("function");

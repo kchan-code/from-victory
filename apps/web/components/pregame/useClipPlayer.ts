@@ -513,6 +513,7 @@ export function useClipPlayer({
   const skipForward15 = useCallback(() => {
     skipBy(15);
   }, [skipBy]);
+  const hasStepNavigation = stepStartSecRef.current.length > 1;
 
   // ── MediaSession wiring ──
   // Registers lock-screen / Control Center title + play/pause handlers.
@@ -594,14 +595,15 @@ export function useClipPlayer({
       if (!Number.isFinite(details?.seekTime)) return;
       seekTo(details.seekTime!);
     });
-    registerHandler("previoustrack", hasStepNavigation
+    const canStepNavigate = stepStartSecRef.current.length > 1;
+    registerHandler("previoustrack", canStepNavigate
       ? () => {
         const audio = audioRef.current;
         if (!audio || completedRef.current || audio.ended) return;
         seekToAdjacentStep(-1);
       }
       : null);
-    registerHandler("nexttrack", hasStepNavigation
+    registerHandler("nexttrack", canStepNavigate
       ? () => {
         const audio = audioRef.current;
         if (!audio || completedRef.current || audio.ended) return;
@@ -609,7 +611,7 @@ export function useClipPlayer({
       }
       : null);
     syncMediaSessionPosition(audioRef.current);
-  }, [hasStepNavigation, reconcilePlaybackState, seekTo, seekToAdjacentStep, skipBy, syncMediaSessionPosition]);
+  }, [reconcilePlaybackState, seekTo, seekToAdjacentStep, skipBy, syncMediaSessionPosition]);
 
   // ── Phase 0: decode-on-mount ──
   // Fetch manifest → resolve playlist → fetch + decode all clips → assemble WAV.
@@ -1222,6 +1224,6 @@ export function useClipPlayer({
     completed,
     error,
     timeline,
-    hasStepNavigation: stepStartSecRef.current.length > 1,
+    hasStepNavigation,
   };
 }
