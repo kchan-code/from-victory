@@ -26,12 +26,17 @@ import { HOCKEY_CONFIG } from "@/components/pregame/sport-registry";
 // state, which is exactly the window FV-488 is about.
 const clipPlayerState = {
   ready: false,
+  nativeNarrationPlayer: null as unknown,
   playing: false,
   completed: false,
   elapsedSec: 0,
   totalSec: 0,
   error: null as string | null,
   timeline: null,
+  seekTo: vi.fn(),
+  skipBackward15: vi.fn(),
+  skipForward15: vi.fn(),
+  hasStepNavigation: false,
   play: vi.fn(),
   pause: vi.fn(),
 };
@@ -66,6 +71,15 @@ function makeState(overrides: Partial<PregameState> = {}): PregameState {
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  clipPlayerState.ready = false;
+  clipPlayerState.nativeNarrationPlayer = null;
+  clipPlayerState.playing = false;
+  clipPlayerState.completed = false;
+  clipPlayerState.elapsedSec = 0;
+  clipPlayerState.totalSec = 0;
+  clipPlayerState.error = null;
+  clipPlayerState.timeline = null;
+  clipPlayerState.hasStepNavigation = false;
 });
 
 // ─── The component ───────────────────────────────────────────────────────────
@@ -143,5 +157,70 @@ describe("AudioSessionScreen preparing state (FV-488)", () => {
     // The old sr-only region was replaced, not supplemented.
     expect(container.querySelectorAll("[aria-live]")).toHaveLength(1);
     expect(container.querySelectorAll(".sr-only[aria-live]")).toHaveLength(0);
+  });
+});
+
+describe("AudioSessionScreen transport panel (FV-781)", () => {
+  it("shows scrubber + skip controls in clip mode with accessibility labels", () => {
+    clipPlayerState.ready = true;
+    clipPlayerState.totalSec = 90;
+    clipPlayerState.elapsedSec = 20;
+    render(
+      <AudioSessionScreen
+        state={makeState()}
+        set={vi.fn()}
+        onContinue={vi.fn()}
+        sportConfig={HOCKEY_CONFIG}
+        sport="hockey"
+      />,
+    );
+
+    expect(screen.getByLabelText(/scrub guided session position/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /skip back 15 seconds/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /skip forward 15 seconds/i })).toBeInTheDocument();
+  });
+
+  it("disables scrubber while audio is still preparing", () => {
+    clipPlayerState.ready = false;
+    render(
+      <AudioSessionScreen
+        state={makeState()}
+        set={vi.fn()}
+        onContinue={vi.fn()}
+        sportConfig={HOCKEY_CONFIG}
+        sport="hockey"
+      />,
+    );
+
+    expect(screen.getByLabelText(/scrub guided session position/i)).toBeDisabled();
+  });
+
+  it("hides scrubber + skip controls after completion and on native playback", () => {
+    clipPlayerState.ready = true;
+    clipPlayerState.completed = true;
+    const { rerender } = render(
+      <AudioSessionScreen
+        state={makeState({ audioCompleted: false })}
+        set={vi.fn()}
+        onContinue={vi.fn()}
+        sportConfig={HOCKEY_CONFIG}
+        sport="hockey"
+      />,
+    );
+    expect(screen.queryByLabelText(/scrub guided session position/i)).not.toBeInTheDocument();
+
+    clipPlayerState.completed = false;
+    // reason: this branch check only needs a truthy native player marker.
+    clipPlayerState.nativeNarrationPlayer = new EventTarget();
+    rerender(
+      <AudioSessionScreen
+        state={makeState({ audioCompleted: false })}
+        set={vi.fn()}
+        onContinue={vi.fn()}
+        sportConfig={HOCKEY_CONFIG}
+        sport="hockey"
+      />,
+    );
+    expect(screen.queryByLabelText(/scrub guided session position/i)).not.toBeInTheDocument();
   });
 });

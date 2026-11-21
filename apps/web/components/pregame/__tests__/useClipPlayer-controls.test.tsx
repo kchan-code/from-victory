@@ -11,7 +11,14 @@ vi.mock("@/components/pregame/audio-playlist", () => ({
     { slug: "reset", url: "/audio/pregame/clips/reset.mp3", durationSec: 10, phases: [] },
   ],
   resolvePracticePlaylist: () => null,
-  buildAssembledTimeline: () => ({ totalDurationSec: 30, phases: [] }),
+  buildAssembledTimeline: () => ({
+    totalDurationSec: 30,
+    phases: [
+      { phase: "arrival", startSec: 0 },
+      { phase: "visualization", startSec: 10 },
+      { phase: "reset", startSec: 20 },
+    ],
+  }),
   DIALED_IN_OPENER_VARIATIONS: ["pp-opener-dialed-in"],
 }));
 vi.mock("@/components/pregame/audio/encode-wav", () => ({
@@ -37,7 +44,9 @@ type ActionName =
   | "previoustrack"
   | "nexttrack";
 
-let audioInstances: HTMLAudioElement[] = [];
+type TestAudioElement = HTMLAudioElement & { __setEnded: (value: boolean) => void };
+
+let audioInstances: TestAudioElement[] = [];
 let actionHandlers: Partial<Record<ActionName, MediaSessionActionHandler | null>>;
 let setPositionState: ReturnType<typeof vi.fn>;
 let originalCreateObjectURL: typeof URL.createObjectURL;
@@ -50,7 +59,7 @@ async function flush(times = 25): Promise<void> {
   }
 }
 
-function createFakeAudioElement(): HTMLAudioElement {
+function createFakeAudioElement(): TestAudioElement {
   const audio = document.createElement("audio");
   let time = 0;
   let paused = true;
@@ -83,7 +92,11 @@ function createFakeAudioElement(): HTMLAudioElement {
     ended = true;
     if (audio.parentNode) audio.parentNode.removeChild(audio);
   });
-  return audio;
+  return Object.assign(audio, {
+    __setEnded: (value: boolean) => {
+      ended = value;
+    },
+  }) as TestAudioElement;
 }
 
 beforeEach(() => {
@@ -162,7 +175,7 @@ describe("useClipPlayer controls + Media Session handlers (FV-781)", () => {
     expect(audioInstances.length).toBeGreaterThan(0);
 
     const audio = audioInstances[audioInstances.length - 1];
-    expect(audio).toBeDefined();
+    if (!audio) throw new Error("Expected test audio instance");
 
     await act(async () => {
       result.current.seekTo(4);
@@ -187,6 +200,13 @@ describe("useClipPlayer controls + Media Session handlers (FV-781)", () => {
     expect(result.current.elapsedSec).toBe(12);
 
     await act(async () => {
+      result.current.seekTo(30);
+      audio.__setEnded(true);
+      audio.dispatchEvent(new Event("ended"));
+    });
+    expect(result.current.completed).toBe(true);
+
+    await act(async () => {
       result.current.play();
     });
     await act(async () => {
@@ -204,7 +224,7 @@ describe("useClipPlayer controls + Media Session handlers (FV-781)", () => {
     await act(flush);
     expect(result.current.error).toBeNull();
     const audio = audioInstances[audioInstances.length - 1];
-    expect(audio).toBeDefined();
+    if (!audio) throw new Error("Expected test audio instance");
 
     expect(typeof actionHandlers.play).toBe("function");
     expect(typeof actionHandlers.pause).toBe("function");
@@ -217,37 +237,62 @@ describe("useClipPlayer controls + Media Session handlers (FV-781)", () => {
 
     await act(async () => {
       result.current.seekTo(10);
-      actionHandlers.seekforward?.({ action: "seekforward", seekOffset: 15 } as any);
+      const seekForward15: MediaSessionActionDetails = { action: "seekforward", seekOffset: 15 };
+      actionHandlers.seekforward?.(seekForward15);
     });
     expect(audio?.currentTime).toBe(25);
 
     await act(async () => {
-      actionHandlers.seekbackward?.({ action: "seekbackward", seekOffset: 15 } as any);
+      const seekBackward15: MediaSessionActionDetails = { action: "seekbackward", seekOffset: 15 };
+      actionHandlers.seekbackward?.(seekBackward15);
     });
     expect(audio?.currentTime).toBe(10);
 
     await act(async () => {
-      actionHandlers.seekto?.({ action: "seekto", seekTime: 22 } as any);
+      const seekTo22: MediaSessionActionDetails = { action: "seekto", seekTime: 22 };
+      actionHandlers.seekto?.(seekTo22);
     });
     expect(audio?.currentTime).toBe(22);
 
     await act(async () => {
-      actionHandlers.previoustrack?.({ action: "previoustrack" } as any);
+      const previousTrack: MediaSessionActionDetails = { action: "previoustrack" };
+      actionHandlers.previoustrack?.(previousTrack);
     });
     expect(audio?.currentTime).toBe(20);
 
     await act(async () => {
-      actionHandlers.nexttrack?.({ action: "nexttrack" } as any);
+      const nextTrack: MediaSessionActionDetails = { action: "nexttrack" };
+      actionHandlers.nexttrack?.(nextTrack);
     });
     expect(audio?.currentTime).toBe(30);
 
     await act(async () => {
-      actionHandlers.play?.({ action: "play" } as any);
+      const seekForwardDefault: MediaSessionActionDetails = { action: "seekforward" };
+      actionHandlers.seekforward?.(seekForwardDefault);
+    });
+    expect(audio?.currentTime).toBe(30);
+
+    await act(async () => {
+      const seekBackwardDefault: MediaSessionActionDetails = { action: "seekbackward" };
+      actionHandlers.seekbackward?.(seekBackwardDefault);
+    });
+    expect(audio?.currentTime).toBe(15);
+
+    await act(async () => {
+      const nextTrack: MediaSessionActionDetails = { action: "nexttrack" };
+      actionHandlers.nexttrack?.(nextTrack);
+    });
+    expect(audio?.currentTime).toBe(20);
+
+    await act(async () => {
+      const playAction: MediaSessionActionDetails = { action: "play" };
+      actionHandlers.play?.(playAction);
     });
     expect(result.current.playing).toBe(true);
 
     await act(async () => {
-      actionHandlers.pause?.({ action: "pause" } as any);
+      const pauseAction: MediaSessionActionDetails = { action: "pause" };
+      actionHandlers.pause?.(pauseAction);
     });
     expect(result.current.playing).toBe(false);
 

@@ -1589,6 +1589,24 @@ export function AudioSessionScreen({
   // hook. Decoding starts on mount so this window is brief — no layout shift
   // since disabled:opacity-50 is already wired on the button (no size change).
   const clipLoading = isClipActive && !clipPlayer.ready && !renderCompleted;
+  const canShowSeekPanel = isClipActive && !renderCompleted && !clipPlayer.nativeNarrationPlayer;
+  const [scrubDraftSec, setScrubDraftSec] = useState<number | null>(null);
+  const [scrubDragging, setScrubDragging] = useState(false);
+  const scrubMaxSec = Math.max(0, Math.floor(renderTotal));
+  const liveScrubSec = Math.min(Math.floor(renderElapsed), scrubMaxSec);
+  const scrubValueSec = scrubDraftSec ?? liveScrubSec;
+  const commitScrub = (nextSeconds: number) => {
+    const bounded = Math.min(scrubMaxSec, Math.max(0, Math.floor(nextSeconds)));
+    setScrubDragging(false);
+    setScrubDraftSec(null);
+    clipPlayer.seekTo(bounded);
+  };
+  useEffect(() => {
+    if (!canShowSeekPanel) {
+      setScrubDragging(false);
+      setScrubDraftSec(null);
+    }
+  }, [canShowSeekPanel]);
 
   // FV-112 diagnostic readout. Enabled by ?debug=1 (desktop) OR by tapping the
   // step label 5× (the only way to reach it inside an installed iOS PWA, where
@@ -1940,26 +1958,47 @@ export function AudioSessionScreen({
           )}
         </div>
 
-        {isClipActive && !renderCompleted && (
+        {canShowSeekPanel && (
           <div className="rounded-[12px] border border-hairline px-3 py-3">
             <div className="mb-2 flex items-center justify-between">
               <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-cream/55">
                 Position
               </span>
               <span className="font-mono text-[11px] tracking-[0.14em] text-cream/75">
-                {formatClock(renderElapsed)} / {formatClock(renderTotal)}
+                {formatClock(scrubValueSec)} / {formatClock(renderTotal)}
               </span>
             </div>
             <input
               type="range"
               min={0}
-              max={Math.max(0, Math.floor(renderTotal))}
+              max={scrubMaxSec}
               step={1}
-              value={Math.min(Math.floor(renderElapsed), Math.max(0, Math.floor(renderTotal)))}
+              value={scrubValueSec}
               onChange={(event) => {
-                clipPlayer.seekTo(Number(event.currentTarget.value));
+                const nextValue = Number(event.currentTarget.value);
+                if (scrubDragging) {
+                  setScrubDraftSec(nextValue);
+                } else {
+                  commitScrub(nextValue);
+                }
+              }}
+              onPointerDown={() => {
+                setScrubDragging(true);
+              }}
+              onPointerUp={(event) => {
+                commitScrub(Number(event.currentTarget.value));
+              }}
+              onPointerCancel={() => {
+                setScrubDragging(false);
+                setScrubDraftSec(null);
+              }}
+              onBlur={(event) => {
+                if (scrubDragging) {
+                  commitScrub(Number(event.currentTarget.value));
+                }
               }}
               aria-label="Scrub guided session position"
+              aria-valuetext={`${formatClock(scrubValueSec)} of ${formatClock(renderTotal)}`}
               disabled={clipLoading}
               className="block min-h-[44px] w-full cursor-pointer accent-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 disabled:opacity-50"
             />

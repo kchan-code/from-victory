@@ -249,7 +249,7 @@ const NETWORK_DEADLINE_MS = 15_000;
  * the same CDN; a hung connection is cancelled and the athlete is unblocked.
  */
 const BED_DEADLINE_MS = 5_000;
-const MEDIA_SESSION_SEEK_STEP_SECONDS = 10;
+const MEDIA_SESSION_INVALID_OFFSET_FALLBACK_SECONDS = 10;
 
 /**
  * Fetch a URL as ArrayBuffer. Returns null on network/HTTP failure — including
@@ -403,21 +403,6 @@ export function useClipPlayer({
           }
         }
       }
-      try {
-        const nav = navigator as NavigatorWithMediaSession;
-        if (nav.mediaSession?.setPositionState) {
-          const duration = totalSecRef.current > 0 ? totalSecRef.current : audio.duration;
-          if (Number.isFinite(duration) && duration > 0) {
-            nav.mediaSession.setPositionState({
-              duration,
-              position: Math.min(duration, Math.max(0, audio.currentTime)),
-              playbackRate: audio.paused ? 0 : 1,
-            });
-          }
-        }
-      } catch {
-        // Non-fatal — some browsers expose MediaSession without position support.
-      }
       rafRef.current = requestAnimationFrame(loop);
     };
     rafRef.current = requestAnimationFrame(loop);
@@ -518,7 +503,7 @@ export function useClipPlayer({
   // ── MediaSession wiring ──
   // Registers lock-screen / Control Center title + play/pause handlers.
   // Feature-detected: absent on SSR and older iOS.
-  const wireMediaSession = useCallback((sessionTitle: string, hasStepNavigation: boolean) => {
+  const wireMediaSession = useCallback((sessionTitle: string) => {
     const nav = navigator as NavigatorWithMediaSession;
     if (!nav.mediaSession) return;
 
@@ -576,18 +561,32 @@ export function useClipPlayer({
     registerHandler("seekbackward", (details) => {
       const audio = audioRef.current;
       if (!audio || completedRef.current || audio.ended) return;
-      const offset = Number.isFinite(details?.seekOffset) && (details?.seekOffset ?? 0) > 0
-        ? details.seekOffset!
-        : MEDIA_SESSION_SEEK_STEP_SECONDS;
-      skipBy(-offset);
+      const seekOffset = details?.seekOffset;
+      if (seekOffset === undefined) {
+        skipBackward15();
+        return;
+      }
+      if (Number.isFinite(seekOffset) && seekOffset > 0) {
+        const offset = seekOffset;
+        skipBy(-offset);
+      } else {
+        skipBy(-MEDIA_SESSION_INVALID_OFFSET_FALLBACK_SECONDS);
+      }
     });
     registerHandler("seekforward", (details) => {
       const audio = audioRef.current;
       if (!audio || completedRef.current || audio.ended) return;
-      const offset = Number.isFinite(details?.seekOffset) && (details?.seekOffset ?? 0) > 0
-        ? details.seekOffset!
-        : MEDIA_SESSION_SEEK_STEP_SECONDS;
-      skipBy(offset);
+      const seekOffset = details?.seekOffset;
+      if (seekOffset === undefined) {
+        skipForward15();
+        return;
+      }
+      if (Number.isFinite(seekOffset) && seekOffset > 0) {
+        const offset = seekOffset;
+        skipBy(offset);
+      } else {
+        skipBy(MEDIA_SESSION_INVALID_OFFSET_FALLBACK_SECONDS);
+      }
     });
     registerHandler("seekto", (details) => {
       const audio = audioRef.current;
@@ -611,7 +610,7 @@ export function useClipPlayer({
       }
       : null);
     syncMediaSessionPosition(audioRef.current);
-  }, [reconcilePlaybackState, seekTo, seekToAdjacentStep, skipBy, syncMediaSessionPosition]);
+  }, [reconcilePlaybackState, seekTo, seekToAdjacentStep, skipBackward15, skipBy, skipForward15, syncMediaSessionPosition]);
 
   // ── Phase 0: decode-on-mount ──
   // Fetch manifest → resolve playlist → fetch + decode all clips → assemble WAV.
@@ -742,16 +741,6 @@ export function useClipPlayer({
       if (cancelled) return;
 
       clipsRef.current = clips;
-      stepStartSecRef.current = clips.reduce<number[]>((starts, clip, index) => {
-        if (index === 0) {
-          starts.push(0);
-          return starts;
-        }
-        const previousClip = clips[index - 1];
-        const previousStart = starts[index - 1] ?? 0;
-        starts.push(previousStart + (previousClip?.durationSec ?? 0));
-        return starts;
-      }, []);
       // FV-552 — a fresh resolve starts a new (potential) playback attempt;
       // rememberTruthSlug fires once playback reaches the truth clip (rAF
       // loop above), not here. Reset the guard so a re-resolve mid-flow
@@ -763,6 +752,14 @@ export function useClipPlayer({
       const assembled = buildAssembledTimeline(clips);
       if (cancelled) return;
       timelineRef.current = assembled;
+      // Step navigation is section-based (timeline phases), not raw clip-based.
+      stepStartSecRef.current = Array.from(
+        new Set(
+          assembled.phases
+            .map((entry) => entry.startSec)
+            .filter((sec) => Number.isFinite(sec) && sec >= 0),
+        ),
+      ).sort((a, b) => a - b);
       setTimeline(assembled);
       setTotalSec(assembled.totalDurationSec);
 
@@ -1046,7 +1043,7 @@ export function useClipPlayer({
         });
       } else {
         // Leave external music's lock-screen controls intact on native.
-        wireMediaSession(practice ? "Pre-Practice" : "Pregame", stepStartSecRef.current.length > 1);
+        wireMediaSession(practice ? "Pre-Practice" : "Pregame");
       }
 
       reconcilePlaybackState(audio);
