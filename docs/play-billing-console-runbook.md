@@ -37,7 +37,7 @@ record wins and this file is wrong.
 |---|---|---|
 | G1 approved (step 1 of this runbook) | Product IDs are permanent | Record 5.2, 13 |
 | You know the trial is 7 days, not 14 | So nobody types 14 into the trial offer. `CLAUDE.md` and the code say 7; `docs/stripe-go-live-runbook.md` said 14 until it was corrected under FV-769. | Record 5.2 "Trial" |
-| G7 decided (key file or keyless) | Decides what you create in step 3 and set in step 5 | Record 13 |
+| G7 decided: keyless (KC, 2026-11-21, FV-779) | Decides what you create in step 3 and set in step 5 | Record 13 |
 | The grace-period list read in the console (G4) | The record expects 14 days but could not confirm the list | Record 13, risk 7 |
 | Owner access to the Play Console developer account | Only the owner can set up payments and invite users | `docs/android-play-release.md` section 1 |
 
@@ -175,8 +175,10 @@ Google, but treat linking as permanent for the developer account.
 
 What the server needs from this step (all from code):
 
-- A credential that can call the Android Publisher API. The server reads it
-  from `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` and asks for the scope
+- A credential that can call the Android Publisher API. In keyless mode (the
+  chosen route) the server uses `GOOGLE_PLAY_WIF_PROVIDER` and
+  `GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL` and no key; only if neither is set does
+  it read a key from `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON`. It asks for the scope
   `https://www.googleapis.com/auth/androidpublisher`
   (`apps/web/lib/subscriptions/google-play-auth.ts`, `buildAuth()` and
   `ANDROID_PUBLISHER_SCOPE`).
@@ -233,20 +235,16 @@ grant: the push identity then holds no Play permission at all.
    calls to Google Play. Give it no project roles in Cloud. Its rights come
    from Play Console in step 3f. Write its email on the worksheet.
    `CHECK IN CONSOLE`
-3. **DECIDED 2026-11-19 (G7): key file for launch; keyless later.** The record prefers
-   keyless federation from the hosting platform "if it works in testing",
-   otherwise a key held as a server-only secret (record 7.6, 13).
-   - The code on `main` supports only the key file today:
-     `google-play-auth.ts` `buildAuth()` reads
-     `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` and nothing else. Keyless would need a
-     code change first. Tell the lead agent if you choose keyless, and do not
-     create a key.
-   - If you choose the key file: create one JSON key for the Play API identity
-     only. Creating a credential is your decision at that moment. Your browser
-     downloads a file. Keep it out of the repo folder, do not open it in a
-     shared screen, and do not paste it anywhere except Vercel in step 5.
-     After step 5, delete the downloaded file and empty the trash.
-     `CHECK IN CONSOLE`
+3. **DECIDED 2026-11-21 (G7, FV-779): keyless federation.** This reverses the
+   2026-11-19 "key file for launch" call. Creating a service-account key is
+   blocked by org policy, so do not create one.
+   - `google-play-auth.ts` `buildAuth()` supports keyless: Vercel's OIDC token
+     is exchanged through Google workload identity federation and the Play API
+     identity is impersonated. Two non-secret Vercel variables select it (step
+     5): `GOOGLE_PLAY_WIF_PROVIDER` and `GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL`.
+   - **TO BE ADDED after KC approves the exact trust (FV-666):** the console
+     steps for the workload identity pool, the provider, and letting the
+     provider's identity impersonate the Play API identity.
 
 ### 3d. Pub/Sub topic
 
@@ -334,7 +332,7 @@ grant: the push identity then holds no Play permission at all.
   subscription with authentication on, and two service accounts.
 - The topic's permissions list Google's notification sender as Publisher and
   nothing unexpected.
-- The Play API identity has at most one key (zero if keyless). The push
+- The Play API identity has zero keys (keyless; key creation is blocked). The push
   identity has zero keys.
 - Play Console lists the Play API identity as a user with one permission on
   one app.
@@ -490,7 +488,9 @@ Vercel offers that. Never put them in a `NEXT_PUBLIC_` variable.
 |---|---|---|
 | `GOOGLE_PLAY_PUBSUB_AUDIENCE` | Yes | The audience string you typed on the push subscription in step 3e (worksheet). Must match exactly. |
 | `GOOGLE_PLAY_PUBSUB_SERVICE_ACCOUNT` | Yes | The email of the push identity service account from step 3c (worksheet). |
-| `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` | Yes, if G7 = key file | The whole contents of the key file downloaded in step 3c, pasted as is. If G7 = keyless, leave it unset and wait for the code change. |
+| `GOOGLE_PLAY_WIF_PROVIDER` | Yes (keyless, chosen route) | Non-secret. The full provider name from step 3c: `projects/<PROJECT_NUMBER>/locations/global/workloadIdentityPools/<POOL_ID>/providers/<PROVIDER_ID>`. |
+| `GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL` | Yes (keyless, chosen route) | Non-secret. The email of the Play API identity from step 3c. If only one of these two is set, Play auth fails closed. |
+| `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` | No | Leave unset in keyless mode. Key creation is blocked by org policy (KC decision 2026-11-21, FV-779). |
 | `GOOGLE_PLAY_CATALOG_ACTIVE` | **No. Leave it unset.** | Nothing. See below. |
 
 1. Add the variables in Vercel's project settings. `CHECK IN CONSOLE`
@@ -502,14 +502,14 @@ Vercel offers that. Never put them in a `NEXT_PUBLIC_` variable.
    runbook (FV-669) says so.
 3. Redeploy production. A changed variable does not reach the running site
    until the next deployment.
-4. If you used a key file: delete the downloaded file now.
+4. If a key file was ever downloaded despite the org policy: delete it now.
 
 What you should expect after this step: the webhook authenticates each push
 and answers 200, and does nothing else. While the flag is unset it does not
 read the message, call Google, or write to the database (`route.ts`,
 "DORMANT").
 
-**Check:** Vercel shows three variables (two if keyless) for Production and
+**Check:** Vercel shows four variables (the two Pub/Sub ones and the two keyless ones) for Production and
 no `GOOGLE_PLAY_CATALOG_ACTIVE`. The newest production deployment is later
 than the last variable edit.
 **Undo:** delete the variables and redeploy. With the two Pub/Sub variables
