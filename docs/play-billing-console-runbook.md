@@ -37,7 +37,7 @@ record wins and this file is wrong.
 |---|---|---|
 | G1 approved (step 1 of this runbook) | Product IDs are permanent | Record 5.2, 13 |
 | You know the trial is 7 days, not 14 | So nobody types 14 into the trial offer. `CLAUDE.md` and the code say 7; `docs/stripe-go-live-runbook.md` said 14 until it was corrected under FV-769. | Record 5.2 "Trial" |
-| G7 decided (key file or keyless) | Decides what you create in step 3 and set in step 5 | Record 13 |
+| G7 decided: keyless (KC, 2026-11-21, FV-779) | Decides what you create in step 3 and set in step 5 | Record 13 |
 | The grace-period list read in the console (G4) | The record expects 14 days but could not confirm the list | Record 13, risk 7 |
 | Owner access to the Play Console developer account | Only the owner can set up payments and invite users | `docs/android-play-release.md` section 1 |
 
@@ -175,8 +175,10 @@ Google, but treat linking as permanent for the developer account.
 
 What the server needs from this step (all from code):
 
-- A credential that can call the Android Publisher API. The server reads it
-  from `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` and asks for the scope
+- A credential that can call the Android Publisher API. In keyless mode (the
+  chosen route) the server uses `GOOGLE_PLAY_WIF_PROVIDER` and
+  `GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL` and no key; only if neither is set does
+  it read a key from `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON`. It asks for the scope
   `https://www.googleapis.com/auth/androidpublisher`
   (`apps/web/lib/subscriptions/google-play-auth.ts`, `buildAuth()` and
   `ANDROID_PUBLISHER_SCOPE`).
@@ -330,7 +332,7 @@ grant: the push identity then holds no Play permission at all.
   subscription with authentication on, and two service accounts.
 - The topic's permissions list Google's notification sender as Publisher and
   nothing unexpected.
-- The Play API identity has at most one key (zero if keyless). The push
+- The Play API identity has zero keys (keyless; key creation is blocked). The push
   identity has zero keys.
 - Play Console lists the Play API identity as a user with one permission on
   one app.

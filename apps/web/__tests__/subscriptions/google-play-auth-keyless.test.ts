@@ -110,6 +110,8 @@ describe("keyless Play auth", () => {
     ["only the provider", { GOOGLE_PLAY_WIF_PROVIDER: PROVIDER }],
     ["only the email", { GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL: EMAIL }],
     ["an empty provider and a valid email", { GOOGLE_PLAY_WIF_PROVIDER: "", GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL: EMAIL }],
+    ["a whitespace-only provider", { GOOGLE_PLAY_WIF_PROVIDER: "   ", GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL: EMAIL }],
+    ["a whitespace-only email", { GOOGLE_PLAY_WIF_PROVIDER: PROVIDER, GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL: " \t" }],
   ])("fails closed when keyless is half-configured (%s), even with the key JSON set", async (_n, env) => {
     Object.assign(process.env, env);
     process.env.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON = JSON.stringify({ private_key: "PRIVATE_KEY_SENTINEL" });
