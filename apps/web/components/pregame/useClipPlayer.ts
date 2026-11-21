@@ -119,7 +119,9 @@ interface MediaMetadataInit {
 // DOM lib's MediaSession interface so assignments type-check cleanly.
 interface MediaSessionManager {
   metadata: MediaMetadata | null;
+  playbackState?: "none" | "paused" | "playing";
   setActionHandler(action: MediaSessionAction, handler: MediaSessionActionHandler | null): void;
+  setPositionState?(state?: MediaPositionState): void;
 }
 type NavigatorWithMediaSession = Navigator & {
   mediaSession?: MediaSessionManager;
@@ -239,6 +241,7 @@ const NETWORK_DEADLINE_MS = 15_000;
  * the same CDN; a hung connection is cancelled and the athlete is unblocked.
  */
 const BED_DEADLINE_MS = 5_000;
+const MEDIA_SESSION_SEEK_STEP_SECONDS = 10;
 
 /**
  * Fetch a URL as ArrayBuffer. Returns null on network/HTTP failure — including
@@ -392,6 +395,45 @@ export function useClipPlayer({
     rafRef.current = requestAnimationFrame(loop);
   }, []);
 
+  const syncMediaSessionPosition = useCallback((audio: NarrationPlayer | null) => {
+    if (!audio || audio instanceof NativeNarrationPlayer) return;
+    const nav = navigator as NavigatorWithMediaSession;
+    const mediaSession = nav.mediaSession;
+    if (!mediaSession || typeof mediaSession.setPositionState !== "function") return;
+
+    const duration = Number.isFinite(audio.duration) && audio.duration > 0 ? audio.duration : 0;
+    if (duration <= 0) return;
+    const position = Math.max(0, Math.min(duration, audio.currentTime));
+
+    try {
+      mediaSession.setPositionState({
+        duration,
+        position,
+        playbackRate: 1,
+      });
+    } catch {
+      // Some platforms throw when position state is unsupported or invalid.
+    }
+  }, []);
+
+  const reconcilePlaybackState = useCallback((audio: NarrationPlayer | null) => {
+    if (!audio || completedRef.current) return;
+    const duration = Number.isFinite(audio.duration) && audio.duration > 0 ? audio.duration : 0;
+    if (duration > 0) {
+      setTotalSec(duration);
+    }
+    const position = duration > 0
+      ? Math.max(0, Math.min(duration, audio.currentTime))
+      : Math.max(0, audio.currentTime);
+    setElapsedSec(position);
+    setPlaying(!audio.paused && !audio.ended);
+    const nav = navigator as NavigatorWithMediaSession;
+    if (nav.mediaSession) {
+      nav.mediaSession.playbackState = audio.paused || audio.ended ? "paused" : "playing";
+    }
+    syncMediaSessionPosition(audio);
+  }, [syncMediaSessionPosition]);
+
   // ── MediaSession wiring ──
   // Registers lock-screen / Control Center title + play/pause handlers.
   // Feature-detected: absent on SSR and older iOS.
@@ -423,18 +465,62 @@ export function useClipPlayer({
     // this, a lock-screen pause could be auto-resumed by the visibilitychange
     // nudge (which keys on intent), and a lock-screen play wouldn't be.
     nav.mediaSession.setActionHandler("play", () => {
+      const audio = audioRef.current;
+      if (!audio || completedRef.current || audio.ended) return;
       intendedPlayingRef.current = true;
-      audioRef.current?.play().catch(() => {
+      audio.play().catch(() => {
         // Play rejected — state syncs via events; clear intent so the nudge
         // doesn't loop-retry a play the browser refused.
         intendedPlayingRef.current = false;
       });
     });
     nav.mediaSession.setActionHandler("pause", () => {
+      const audio = audioRef.current;
+      if (!audio || completedRef.current || audio.ended) return;
       intendedPlayingRef.current = false;
-      audioRef.current?.pause();
+      if (!audio.paused) {
+        audio.pause();
+      } else {
+        reconcilePlaybackState(audio);
+      }
     });
-  }, []);
+    nav.mediaSession.setActionHandler("seekbackward", (details) => {
+      const audio = audioRef.current;
+      if (!audio || audio instanceof NativeNarrationPlayer || completedRef.current || audio.ended) return;
+      const offset = Number.isFinite(details?.seekOffset) && (details?.seekOffset ?? 0) > 0
+        ? details.seekOffset!
+        : MEDIA_SESSION_SEEK_STEP_SECONDS;
+      audio.currentTime = Math.max(0, audio.currentTime - offset);
+      reconcilePlaybackState(audio);
+    });
+    nav.mediaSession.setActionHandler("seekforward", (details) => {
+      const audio = audioRef.current;
+      if (!audio || audio instanceof NativeNarrationPlayer || completedRef.current || audio.ended) return;
+      const offset = Number.isFinite(details?.seekOffset) && (details?.seekOffset ?? 0) > 0
+        ? details.seekOffset!
+        : MEDIA_SESSION_SEEK_STEP_SECONDS;
+      const timelineDuration = timelineRef.current?.totalDurationSec ?? 0;
+      const duration = Number.isFinite(audio.duration) && audio.duration > 0
+        ? audio.duration
+        : (Number.isFinite(timelineDuration) && timelineDuration > 0 ? timelineDuration : 0);
+      const nextTime = audio.currentTime + offset;
+      audio.currentTime = duration > 0 ? Math.min(duration, nextTime) : Math.max(0, nextTime);
+      reconcilePlaybackState(audio);
+    });
+    nav.mediaSession.setActionHandler("seekto", (details) => {
+      const audio = audioRef.current;
+      if (!audio || audio instanceof NativeNarrationPlayer || completedRef.current || audio.ended) return;
+      if (!Number.isFinite(details?.seekTime)) return;
+      const timelineDuration = timelineRef.current?.totalDurationSec ?? 0;
+      const duration = Number.isFinite(audio.duration) && audio.duration > 0
+        ? audio.duration
+        : (Number.isFinite(timelineDuration) && timelineDuration > 0 ? timelineDuration : 0);
+      const maxDuration = duration > 0 ? duration : details.seekTime!;
+      audio.currentTime = Math.max(0, Math.min(maxDuration, details.seekTime!));
+      reconcilePlaybackState(audio);
+    });
+    syncMediaSessionPosition(audioRef.current);
+  }, [reconcilePlaybackState, syncMediaSessionPosition]);
 
   // ── Phase 0: decode-on-mount ──
   // Fetch manifest → resolve playlist → fetch + decode all clips → assemble WAV.
@@ -797,20 +883,38 @@ export function useClipPlayer({
       // Driving from events (rather than only from the play() callback's .then())
       // means the progress timer is also live after resumes triggered by the
       // visibilitychange nudge or the MediaSession lock-screen play button.
-      audio.addEventListener("play", () => {
+      const onPlay = () => {
         setPlaying(true);
         startRaf();
-      });
-      audio.addEventListener("pause", () => {
+        const nav = navigator as NavigatorWithMediaSession;
+        if (nav.mediaSession) {
+          nav.mediaSession.playbackState = "playing";
+        }
+        syncMediaSessionPosition(audio);
+      };
+      const onPause = () => {
         if (!completedRef.current) {
-          setPlaying(false);
           stopRaf();
+          reconcilePlaybackState(audio);
           // Note: intendedPlayingRef is intentionally NOT cleared here.
           // An iOS-initiated pause (phone call, system interruption) fires the
           // "pause" event but the athlete has not chosen to stop. The intent ref
           // is cleared only in the user-initiated pause() callback and on completion.
         }
-      });
+      };
+      const onPlaybackStateHint = () => {
+        reconcilePlaybackState(audio);
+      };
+      audio.addEventListener("play", onPlay);
+      audio.addEventListener("pause", onPause);
+      audio.addEventListener("stalled", onPlaybackStateHint);
+      audio.addEventListener("suspend", onPlaybackStateHint);
+      audio.addEventListener("waiting", onPlaybackStateHint);
+      audio.addEventListener("timeupdate", onPlaybackStateHint);
+      audio.addEventListener("seeking", onPlaybackStateHint);
+      audio.addEventListener("seeked", onPlaybackStateHint);
+      audio.addEventListener("loadedmetadata", onPlaybackStateHint);
+      audio.addEventListener("durationchange", onPlaybackStateHint);
 
       audio.addEventListener("ended", () => {
         if (completedRef.current) return;
@@ -822,6 +926,7 @@ export function useClipPlayer({
         setElapsedSec(totalDur);
         setPlaying(false);
         stopRaf();
+        syncMediaSessionPosition(audio);
         // FV-494 — session over: clear the reload guard and tell the
         // registrar, so a deploy that landed mid-session can complete.
         audio.removeAttribute("data-fv-guided-session");
@@ -843,6 +948,7 @@ export function useClipPlayer({
         wireMediaSession(practice ? "Pre-Practice" : "Pregame");
       }
 
+      reconcilePlaybackState(audio);
       setReady(true);
     }
 
@@ -873,7 +979,7 @@ export function useClipPlayer({
         blobUrlRef.current = null;
       }
     };
-  }, [need, position, adversity, anchor, selfTalk, cueWord, positivePlays, practice, practiceState, practiceFocus, sport, prayerStyle, bedId, startRaf, stopRaf, wireMediaSession]);
+  }, [need, position, adversity, anchor, selfTalk, cueWord, positivePlays, practice, practiceState, practiceFocus, sport, prayerStyle, bedId, startRaf, stopRaf, reconcilePlaybackState, syncMediaSessionPosition, wireMediaSession]);
 
   // ── Lightweight visibilitychange nudge ──
   // iOS may pause the audio element when the app is briefly backgrounded (e.g.
@@ -893,9 +999,14 @@ export function useClipPlayer({
     const handleVisibilityChange = () => {
       if (document.visibilityState !== "visible") return;
       const audio = audioRef.current;
+      if (!audio || completedRef.current) return;
+      // Always reconcile from the media element on foreground so any
+      // background interruption (route loss, call, Bluetooth disconnect) is
+      // reflected in UI state before the next control tap.
+      reconcilePlaybackState(audio);
       // Native interruptions require an explicit Play tap. Status polling
       // catches up after backgrounding without restarting audio over a call.
-      if (!audio || audio instanceof NativeNarrationPlayer || completedRef.current || !intendedPlayingRef.current) return;
+      if (audio instanceof NativeNarrationPlayer || !intendedPlayingRef.current) return;
       if (audio.paused) {
         audio.play().catch(() => {
           // Play rejected — athlete must tap manually. Don't set error.
@@ -907,13 +1018,21 @@ export function useClipPlayer({
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [ready]);
+  }, [ready, reconcilePlaybackState]);
 
   // ── play ──
   const play = useCallback(() => {
-    if (!ready || completed || playing) return;
+    if (!ready || completed) return;
     const audio = audioRef.current;
     if (!audio) return;
+    if (audio.ended) {
+      reconcilePlaybackState(audio);
+      return;
+    }
+    if (!audio.paused) {
+      reconcilePlaybackState(audio);
+      return;
+    }
 
     // Record that the athlete intends to be playing. This is set before the
     // play() call so the visibilitychange nudge can act on it even if the
@@ -932,21 +1051,24 @@ export function useClipPlayer({
       // — leave UI intact so the athlete can tap again.
       intendedPlayingRef.current = false;
     });
-  }, [ready, completed, playing]);
+  }, [ready, completed, reconcilePlaybackState]);
 
   // ── pause ──
   const pause = useCallback(() => {
-    if (!playing) return;
     const audio = audioRef.current;
-    if (!audio) return;
+    if (!audio || completed) return;
     // Clear intent BEFORE calling pause() so the visibilitychange nudge — if
     // it fires immediately after — sees the correct intent state and does not
     // attempt to resume a deliberately-paused session.
     intendedPlayingRef.current = false;
+    if (audio.ended || audio.paused) {
+      reconcilePlaybackState(audio);
+      return;
+    }
     // audio.pause() is synchronous. The "pause" event listener handles
     // setPlaying(false) + stopRaf() so we don't need to call them here.
     audio.pause();
-  }, [playing]);
+  }, [completed, reconcilePlaybackState]);
 
   // ── cleanup on unmount ──
   useEffect(() => {
@@ -975,6 +1097,9 @@ export function useClipPlayer({
         if (!getNarrationBridge() && nav.mediaSession) {
           nav.mediaSession.setActionHandler("play", null);
           nav.mediaSession.setActionHandler("pause", null);
+          nav.mediaSession.setActionHandler("seekbackward", null);
+          nav.mediaSession.setActionHandler("seekforward", null);
+          nav.mediaSession.setActionHandler("seekto", null);
         }
       } catch {
         // Non-fatal — navigator may not be available in all teardown contexts.
