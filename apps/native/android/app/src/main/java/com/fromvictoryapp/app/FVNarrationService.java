@@ -43,6 +43,8 @@ public class FVNarrationService extends Service {
     private String state = "ready";
     private double duration;
     private double lastPosition;
+    // seekTo is asynchronous: report the clamped target until it lands.
+    private double pendingSeek = -1;
     private double volume = 1;
     private PluginCall preparing;
     private PluginCall starting;
@@ -120,6 +122,12 @@ public class FVNarrationService extends Service {
             releaseFocus();
             stopPlaybackService();
             emit("ended");
+        });
+        candidate.setOnSeekCompleteListener(value -> {
+            if (value != player || pendingSeek < 0) return;
+            pendingSeek = -1;
+            if ("playing".equals(state)) lastPosition = value.getCurrentPosition() / 1000.0;
+            emit("seek");
         });
         candidate.setOnErrorListener((value, what, extra) -> {
             if (value != player) return true;
@@ -243,7 +251,7 @@ public class FVNarrationService extends Service {
         if (starting != null) { starting.reject("Narration start cancelled"); starting = null; }
         boolean changed = false;
         if (player != null && "playing".equals(state)) {
-            lastPosition = player.getCurrentPosition() / 1000.0;
+            lastPosition = livePosition();
             player.pause();
             state = "paused";
             changed = true;
@@ -259,12 +267,16 @@ public class FVNarrationService extends Service {
         try { active = player.isPlaying(); } catch (IllegalStateException exception) { active = false; }
         if (!active) pausePlayback("system");
     }
+    private double livePosition() {
+        if ("ended".equals(state)) return duration;
+        if (pendingSeek >= 0) return pendingSeek;
+        if (player != null && "playing".equals(state)) return player.getCurrentPosition() / 1000.0;
+        return lastPosition;
+    }
     private void emit(String reason) {
         if (stateListener == null || transfer == null) return;
-        double position = "ended".equals(state) ? duration : lastPosition;
-        if (player != null && "playing".equals(state)) position = player.getCurrentPosition() / 1000.0;
         stateListener.onState(new JSObject().put("sessionId", transfer.sessionId)
-            .put("playing", "playing".equals(state)).put("position", position).put("duration", duration)
+            .put("playing", "playing".equals(state)).put("position", livePosition()).put("duration", duration)
             .put("reason", reason).put("state", state));
     }
     void pause(PluginCall call) { requireSession(call); pausePlayback("pause"); call.resolve(); }
@@ -279,6 +291,7 @@ public class FVNarrationService extends Service {
         if (target >= duration) {
             if (starting != null) { starting.reject("Narration start cancelled"); starting = null; }
             if ("playing".equals(state)) player.pause();
+            pendingSeek = -1;
             lastPosition = duration;
             state = "ended";
             releaseFocus();
@@ -287,8 +300,9 @@ public class FVNarrationService extends Service {
             call.resolve();
             return;
         }
-        player.seekTo((int) Math.round(target * 1000));
+        pendingSeek = target;
         lastPosition = target;
+        player.seekTo((int) Math.round(target * 1000));
         emit("seek");
         call.resolve();
     }
@@ -307,7 +321,7 @@ public class FVNarrationService extends Service {
     void getStatus(PluginCall call) {
         requireSession(call);
         reconcileSystemPause();
-        if (player != null && "playing".equals(state)) lastPosition = player.getCurrentPosition() / 1000.0;
+        lastPosition = livePosition();
         JSObject result = new JSObject().put("position", lastPosition).put("duration", duration).put("state", state).put("volume", volume);
         if ("error".equals(state)) result.put("error", "Narration playback failed");
         call.resolve(result);
@@ -327,6 +341,7 @@ public class FVNarrationService extends Service {
         state = "ready";
         duration = 0;
         lastPosition = 0;
+        pendingSeek = -1;
         volume = 1;
     }
     @Override public void onTaskRemoved(Intent rootIntent) { reset(); super.onTaskRemoved(rootIntent); }
