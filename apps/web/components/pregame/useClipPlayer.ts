@@ -989,7 +989,9 @@ export function useClipPlayer({
       // 7. Create an object URL and wire the HTMLAudioElement.
       let audio: NarrationPlayer;
       if (nativeBridge) {
-        audio = await createNativeNarrationPlayer(nativeBridge, blob, transferController.signal);
+        audio = await createNativeNarrationPlayer(
+          nativeBridge, blob, transferController.signal, practice ? "Pre-Practice" : "Pregame",
+        );
         if (cancelled) { audio.remove(); return; }
       } else {
         const blobUrl = URL.createObjectURL(blob);

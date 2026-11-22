@@ -1,6 +1,7 @@
 import AVFoundation
 import Capacitor
 import Foundation
+import MediaPlayer
 import WebKit
 
 /// App-local playback of the assembled narration WAV. No music-provider access:
@@ -17,6 +18,7 @@ public class FVNarrationPlugin: CAPPlugin, CAPBridgedPlugin, AVAudioPlayerDelega
         CAPPluginMethod(name: "prepare", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "play", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "pause", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "seek", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "setVolume", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "getStatus", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "dispose", returnType: CAPPluginReturnPromise),
@@ -36,6 +38,10 @@ public class FVNarrationPlugin: CAPPlugin, CAPBridgedPlugin, AVAudioPlayerDelega
     private var failure: String?
     private var ownsAudioSession = false
     private var observers: [NSObjectProtocol] = []
+    // Now Playing carries only the session type; never athlete data.
+    private static let allowedTitles: Set<String> = ["Pregame", "Pre-Practice"]
+    private var nowPlayingTitle = "From Victory"
+    private var remoteTargets: [(MPRemoteCommand, Any)] = []
 
     public override func load() {
         // A force-quit bypasses deinit. Sweep only this plugin's generated
@@ -54,15 +60,24 @@ public class FVNarrationPlugin: CAPPlugin, CAPBridgedPlugin, AVAudioPlayerDelega
         let center = NotificationCenter.default
         observers.append(center.addObserver(forName: AVAudioSession.interruptionNotification,
                                             object: nil, queue: .main) { [weak self] notification in
-            guard let value = notification.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt,
-                  value == AVAudioSession.InterruptionType.began.rawValue else { return }
-            self?.pauseForInterruption()
+            guard let self, let value = notification.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt else { return }
+            if value == AVAudioSession.InterruptionType.began.rawValue {
+                self.pauseForInterruption("interruptionBegan")
+            } else if value == AVAudioSession.InterruptionType.ended.rawValue {
+                // Report only; resuming stays an explicit athlete tap.
+                self.emitState("interruptionEnded")
+            }
         })
         observers.append(center.addObserver(forName: AVAudioSession.routeChangeNotification,
                                             object: nil, queue: .main) { [weak self] notification in
-            guard let value = notification.userInfo?[AVAudioSessionRouteChangeReasonKey] as? UInt,
-                  value == AVAudioSession.RouteChangeReason.oldDeviceUnavailable.rawValue else { return }
-            self?.pauseForInterruption()
+            guard let self, let value = notification.userInfo?[AVAudioSessionRouteChangeReasonKey] as? UInt else { return }
+            if value == AVAudioSession.RouteChangeReason.oldDeviceUnavailable.rawValue {
+                self.pauseForInterruption("routeChange")
+            } else {
+                // Other route changes (CarPlay handoff, overrides) can stop the
+                // player without an oldDeviceUnavailable reason.
+                self.reconcileSystemPause("routeChange")
+            }
         })
         observers.append(center.addObserver(forName: AVAudioSession.mediaServicesWereResetNotification,
                                             object: nil, queue: .main) { [weak self] _ in
@@ -72,6 +87,8 @@ public class FVNarrationPlugin: CAPPlugin, CAPBridgedPlugin, AVAudioPlayerDelega
             self.ownsAudioSession = false
             self.state = "error"
             self.failure = "Audio became unavailable. Start the session again."
+            self.emitState("error")
+            self.disableRemoteControls()
         })
     }
 
@@ -161,6 +178,10 @@ public class FVNarrationPlugin: CAPPlugin, CAPBridgedPlugin, AVAudioPlayerDelega
                 player.volume = Float(self.volume)
                 self.player = player
                 self.state = "ready"
+                if let title = call.getString("title"), Self.allowedTitles.contains(title) {
+                    self.nowPlayingTitle = title
+                }
+                self.enableRemoteControls()
                 // Do not call prepareToPlay: it can activate the hardware before
                 // the athlete taps Play. Session activation belongs only in play.
                 call.resolve(["duration": player.duration])
@@ -175,22 +196,13 @@ public class FVNarrationPlugin: CAPPlugin, CAPBridgedPlugin, AVAudioPlayerDelega
         DispatchQueue.main.async {
             guard self.matches(call) else { return }
             guard self.state != "ended" else { call.resolve(); return }
-            guard self.failure == nil, let player = self.player else {
+            guard self.failure == nil, self.player != nil else {
                 call.reject("Narration is not ready.")
                 return
             }
-            do {
-                let session = AVAudioSession.sharedInstance()
-                try session.setCategory(.playback, mode: .default, options: [.mixWithOthers])
-                try session.setActive(true)
-                self.ownsAudioSession = true
-                guard player.play() else { throw CocoaError(.fileReadUnknown) }
-                self.state = "playing"
+            if self.startPlayback("play") {
                 call.resolve()
-            } catch {
-                self.player?.pause()
-                self.state = "paused"
-                self.deactivateAudioSession()
+            } else {
                 call.reject("Narration could not start. Tap Play to try again.")
             }
         }
@@ -199,7 +211,23 @@ public class FVNarrationPlugin: CAPPlugin, CAPBridgedPlugin, AVAudioPlayerDelega
     @objc func pause(_ call: CAPPluginCall) {
         DispatchQueue.main.async {
             guard self.matches(call) else { return }
-            self.pauseForInterruption()
+            self.pauseForInterruption("pause")
+            call.resolve()
+        }
+    }
+
+    @objc func seek(_ call: CAPPluginCall) {
+        DispatchQueue.main.async {
+            guard self.matches(call) else { return }
+            guard let number = call.getValue("position") as? NSNumber,
+                  CFGetTypeID(number) != CFBooleanGetTypeID(), number.doubleValue.isFinite else {
+                call.reject("Narration position must be a number.")
+                return
+            }
+            guard self.seekPlayback(to: number.doubleValue, reason: "seek") else {
+                call.reject("Narration is not ready.")
+                return
+            }
             call.resolve()
         }
     }
@@ -207,9 +235,8 @@ public class FVNarrationPlugin: CAPPlugin, CAPBridgedPlugin, AVAudioPlayerDelega
     @objc func getStatus(_ call: CAPPluginCall) {
         DispatchQueue.main.async {
             guard self.matches(call) else { return }
-            let duration = self.player?.duration ?? 0
-            let position = self.state == "ended" ? duration : (self.player?.currentTime ?? 0)
-            var result: [String: Any] = ["position": position, "duration": duration,
+            self.reconcileSystemPause("system")
+            var result: [String: Any] = ["position": self.currentPosition, "duration": self.player?.duration ?? 0,
                                        "state": self.state, "volume": self.volume]
             if let failure = self.failure { result["error"] = failure }
             call.resolve(result)
@@ -250,10 +277,12 @@ public class FVNarrationPlugin: CAPPlugin, CAPBridgedPlugin, AVAudioPlayerDelega
 
     public func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
         DispatchQueue.main.async {
-            guard player === self.player else { return }
+            guard player === self.player, self.state != "ended" else { return }
             self.state = flag ? "ended" : "error"
             if !flag { self.failure = "Narration playback failed." }
             self.deactivateAudioSession()
+            self.emitState(flag ? "ended" : "error")
+            self.disableRemoteControls()
         }
     }
 
@@ -272,13 +301,143 @@ public class FVNarrationPlugin: CAPPlugin, CAPBridgedPlugin, AVAudioPlayerDelega
         return true
     }
 
-    private func pauseForInterruption() {
+    private var currentPosition: Double {
+        let duration = player?.duration ?? 0
+        return state == "ended" ? duration : (player?.currentTime ?? 0)
+    }
+
+    private func pauseForInterruption(_ reason: String) {
         guard state == "playing" else { return }
         player?.pause()
         state = "paused"
         // Never auto-resume after calls or unplugging headphones. The athlete
         // resumes explicitly, preserving their control and the music app's.
         deactivateAudioSession()
+        emitState(reason)
+    }
+
+    /// The system can stop AVAudioPlayer without a notification we act on.
+    /// Never report "playing" for a player that is not.
+    private func reconcileSystemPause(_ reason: String) {
+        guard state == "playing", let player, !player.isPlaying else { return }
+        pauseForInterruption(reason)
+    }
+
+    @discardableResult
+    private func startPlayback(_ reason: String) -> Bool {
+        guard state != "ended" else { return true }
+        guard failure == nil, let player else { return false }
+        do {
+            let session = AVAudioSession.sharedInstance()
+            try session.setCategory(.playback, mode: .default, options: [.mixWithOthers])
+            try session.setActive(true)
+            ownsAudioSession = true
+            guard player.play() else { throw CocoaError(.fileReadUnknown) }
+            state = "playing"
+            emitState(reason)
+            return true
+        } catch {
+            player.pause()
+            state = "paused"
+            deactivateAudioSession()
+            emitState("playFailed")
+            return false
+        }
+    }
+
+    /// Clamped. Landing on the end completes the session exactly once, like
+    /// a natural finish, so JS sees a single "ended".
+    private func seekPlayback(to position: Double, reason: String) -> Bool {
+        guard failure == nil, let player, ["ready", "paused", "playing"].contains(state) else { return false }
+        let target = min(max(0, position), player.duration)
+        if target >= player.duration {
+            player.stop()
+            player.currentTime = player.duration
+            state = "ended"
+            deactivateAudioSession()
+            emitState("ended")
+            disableRemoteControls()
+            return true
+        }
+        player.currentTime = target
+        emitState(reason)
+        return true
+    }
+
+    private func emitState(_ reason: String) {
+        guard let sessionId else { return }
+        let duration = player?.duration ?? 0
+        let position = currentPosition
+        notifyListeners("stateChange", data: [
+            "sessionId": sessionId, "playing": state == "playing", "position": position,
+            "duration": duration, "reason": reason, "state": state,
+        ])
+        if ["ready", "paused", "playing"].contains(state), player != nil {
+            MPNowPlayingInfoCenter.default().nowPlayingInfo = [
+                MPMediaItemPropertyTitle: nowPlayingTitle,
+                MPMediaItemPropertyArtist: "From Victory",
+                MPMediaItemPropertyPlaybackDuration: duration,
+                MPNowPlayingInfoPropertyElapsedPlaybackTime: position,
+                MPNowPlayingInfoPropertyPlaybackRate: state == "playing" ? 1.0 : 0.0,
+            ]
+        } else {
+            MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
+        }
+    }
+
+    /// Lock screen, Control Center, and CarPlay. Every handler goes through the
+    /// same state transitions as the bridge, so JS hears about it via stateChange.
+    private func enableRemoteControls() {
+        disableRemoteControls()
+        let center = MPRemoteCommandCenter.shared()
+        func add(_ command: MPRemoteCommand,
+                 _ handler: @escaping (MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus) {
+            command.isEnabled = true
+            remoteTargets.append((command, command.addTarget(handler: handler)))
+        }
+        add(center.playCommand) { [weak self] _ in
+            guard let self, self.player != nil, self.state != "ended" else { return .noActionableNowPlayingItem }
+            return self.startPlayback("remotePlay") ? .success : .commandFailed
+        }
+        add(center.pauseCommand) { [weak self] _ in
+            guard let self, self.player != nil else { return .noActionableNowPlayingItem }
+            self.pauseForInterruption("remotePause")
+            return .success
+        }
+        add(center.togglePlayPauseCommand) { [weak self] _ in
+            guard let self, self.player != nil, self.state != "ended" else { return .noActionableNowPlayingItem }
+            self.reconcileSystemPause("system")
+            if self.state == "playing" {
+                self.pauseForInterruption("remotePause")
+                return .success
+            }
+            return self.startPlayback("remotePlay") ? .success : .commandFailed
+        }
+        center.skipBackwardCommand.preferredIntervals = [15]
+        center.skipForwardCommand.preferredIntervals = [15]
+        add(center.skipBackwardCommand) { [weak self] event in
+            guard let self, let player = self.player else { return .noActionableNowPlayingItem }
+            let interval = (event as? MPSkipIntervalCommandEvent)?.interval ?? 15
+            return self.seekPlayback(to: player.currentTime - interval, reason: "remoteSeek") ? .success : .commandFailed
+        }
+        add(center.skipForwardCommand) { [weak self] event in
+            guard let self, let player = self.player else { return .noActionableNowPlayingItem }
+            let interval = (event as? MPSkipIntervalCommandEvent)?.interval ?? 15
+            return self.seekPlayback(to: player.currentTime + interval, reason: "remoteSeek") ? .success : .commandFailed
+        }
+        add(center.changePlaybackPositionCommand) { [weak self] event in
+            guard let self, let event = event as? MPChangePlaybackPositionCommandEvent else { return .commandFailed }
+            return self.seekPlayback(to: event.positionTime, reason: "remoteSeek") ? .success : .commandFailed
+        }
+    }
+
+    private func disableRemoteControls() {
+        for (command, target) in remoteTargets {
+            command.removeTarget(target)
+            command.isEnabled = false
+        }
+        remoteTargets.removeAll()
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
     }
 
     private func deactivateAudioSession() {
@@ -297,6 +456,8 @@ public class FVNarrationPlugin: CAPPlugin, CAPBridgedPlugin, AVAudioPlayerDelega
         failure = message
         state = "error"
         deactivateAudioSession()
+        emitState("error")
+        disableRemoteControls()
     }
 
     private func cleanUp() {
@@ -313,6 +474,8 @@ public class FVNarrationPlugin: CAPPlugin, CAPBridgedPlugin, AVAudioPlayerDelega
         volume = 1
         failure = nil
         state = "ready"
+        nowPlayingTitle = "From Victory"
+        disableRemoteControls()
         deactivateAudioSession()
     }
 

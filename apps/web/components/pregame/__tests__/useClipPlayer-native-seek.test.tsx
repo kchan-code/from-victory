@@ -69,6 +69,7 @@ describe("native seek and transport (FV-784)", () => {
     const { result } = renderHook(() => useClipPlayer(options));
     await act(flush);
     expect(result.current.nativeNarrationPlayer?.supportsSeek).toBe(true);
+    expect(bridge.prepare).toHaveBeenCalledWith({ sessionId: expect.any(String), title: "Pregame" });
     await act(async () => { result.current.seekTo(20); await flush(); });
     expect(bridge.seek).toHaveBeenLastCalledWith(expect.objectContaining({ position: 20 }));
     expect(result.current.elapsedSec).toBe(20);

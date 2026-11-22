@@ -19,11 +19,13 @@ export type NarrationStateEvent = {
   reason: string;
   state?: NarrationStatus["state"];
 };
+export type NarrationTitle = "Pregame" | "Pre-Practice";
 export type NarrationListenerHandle = { remove: () => Promise<void> | void };
 export interface NarrationBridge {
   begin(options: { sessionId: string; byteLength: number }): Promise<void>;
   append(options: { sessionId: string; index: number; data: string }): Promise<void>;
-  prepare(options: { sessionId: string }): Promise<{ duration: number }>;
+  /** title is the session type only ("Pregame" / "Pre-Practice") for Now Playing; never athlete data. */
+  prepare(options: { sessionId: string; title?: NarrationTitle }): Promise<{ duration: number }>;
   play(options: { sessionId: string }): Promise<void>;
   pause(options: { sessionId: string }): Promise<void>;
   getStatus(options: { sessionId: string }): Promise<NarrationStatus>;
@@ -284,7 +286,7 @@ export function narrationSessionId(): string {
 }
 
 export async function createNativeNarrationPlayer(
-  bridge: NarrationBridge, blob: Blob, signal: AbortSignal,
+  bridge: NarrationBridge, blob: Blob, signal: AbortSignal, title?: NarrationTitle,
 ): Promise<NativeNarrationPlayer> {
   checkAbort(signal);
   if (blob.size < 44 || blob.size > NARRATION_MAX_BYTES) throw new Error("Invalid narration size");
@@ -309,7 +311,7 @@ export async function createNativeNarrationPlayer(
       await bounded(bridge.append({ sessionId, index: index++, data: base64(bytes) }));
       checkAbort(signal);
     }
-    const { duration } = await bounded(bridge.prepare({ sessionId }));
+    const { duration } = await bounded(bridge.prepare(title ? { sessionId, title } : { sessionId }));
     checkAbort(signal);
     if (!Number.isFinite(duration) || duration <= 0) throw new Error("Invalid narration duration");
     const player = new NativeNarrationPlayer(bridge, sessionId, duration);
