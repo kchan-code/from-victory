@@ -1,0 +1,68 @@
+# FV-782 — manual check of the keyless Google Play token exchange in production.
+#
+# Runs ONLY when someone starts it by hand (workflow_dispatch). No schedule, no
+# push or pull_request trigger. It makes one POST to the protected route
+# /api/internal/play-auth-check with the cron secret and prints only the HTTP
+# status and the pass/fail result. The route does the token exchange and
+# nothing else: no Play API call, no database, no purchase or billing change.
+#
+# The secret is read from the GitHub `production` environment, passed to curl
+# through a config file on stdin (never on the command line), and never echoed.
+# The response body is not printed; only whether it is exactly {"ok":true}.
+#
+# Result:
+#   200 + ok:true  -> job passes: production exchanged a Vercel identity for a
+#                     Google access token.
+#   503            -> job fails: the exchange failed.
+#   401            -> job fails: the GitHub copy of CRON_SECRET does not match
+#                     the one in Vercel Production.
+#   500            -> job fails: CRON_SECRET is not set in Vercel Production.
+
+name: play-auth-check
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: play-auth-check
+  cancel-in-progress: false
+
+jobs:
+  check:
+    name: Keyless Play token exchange (production)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: production
+    steps:
+      - name: Call the protected check
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          CHECK_URL: https://www.fromvictoryapp.com/api/internal/play-auth-check
+        run: |
+          set -euo pipefail
+          if [ -z "${CRON_SECRET}" ]; then
+            echo "::error::CRON_SECRET is not set in the GitHub production environment."
+            exit 1
+          fi
+          body_file="$(mktemp)"
+          trap 'rm -f "${body_file}"' EXIT
+          status="$(printf 'header = "Authorization: Bearer %s"\n' "${CRON_SECRET}" \
+            | curl --silent --show-error --max-time 60 --proto '=https' \
+                --config - --request POST \
+                --output "${body_file}" --write-out '%{http_code}' \
+                "${CHECK_URL}")"
+          echo "http_status=${status}"
+          if [ "${status}" = "200" ] && [ "$(tr -d ' \n\r\t' < "${body_file}")" = '{"ok":true}' ]; then
+            echo "result=pass"
+            exit 0
+          fi
+          echo "result=fail"
+          case "${status}" in
+            401) echo "::error::Unauthorized. The GitHub copy of CRON_SECRET does not match Vercel Production." ;;
+            500) echo "::error::The route reports CRON_SECRET is not configured in Vercel Production." ;;
+            503) echo "::error::The token exchange failed." ;;
+            *)   echo "::error::Unexpected status." ;;
+          esac
+          exit 1
