@@ -1145,7 +1145,10 @@ export function useClipPlayer({
       completeSession(audio);
       return;
     }
-    if (!audio.paused) {
+    // Native `paused` is a cached sample: the plugin may have paused itself
+    // (route loss, CarPlay unplug) since the last status. Always send the tap
+    // to the bridge, which is idempotent and re-reads status afterwards.
+    if (!audio.paused && !(audio instanceof NativeNarrationPlayer)) {
       reconcilePlaybackState(audio);
       return;
     }
@@ -1177,7 +1180,7 @@ export function useClipPlayer({
     // it fires immediately after — sees the correct intent state and does not
     // attempt to resume a deliberately-paused session.
     intendedPlayingRef.current = false;
-    if (audio.ended || audio.paused) {
+    if (audio.ended || (audio.paused && !(audio instanceof NativeNarrationPlayer))) {
       reconcilePlaybackState(audio);
       return;
     }
