@@ -295,6 +295,9 @@ export function useClipPlayer({
   // ── state ──
   const [ready, setReady] = useState(false);
   const [nativeNarrationPlayer, setNativeNarrationPlayer] = useState<NativeNarrationPlayer | null>(null);
+  // Re-render when the native player discovers seek is unavailable, so the
+  // seek panel hides on builds that only claimed to support it.
+  const [, setSeekRevision] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [elapsedSec, setElapsedSec] = useState(0);
   const [totalSec, setTotalSec] = useState(0);
@@ -472,8 +475,19 @@ export function useClipPlayer({
 
   const seekTo = useCallback((seconds: number) => {
     const audio = audioRef.current;
-    if (!audio || audio instanceof NativeNarrationPlayer) return;
-    if (!Number.isFinite(seconds)) return;
+    if (!audio || !Number.isFinite(seconds)) return;
+    if (audio instanceof NativeNarrationPlayer) {
+      if (!audio.supportsSeek || completedRef.current || audio.ended) return;
+      const target = Math.min(audio.duration, Math.max(0, seconds));
+      audio.seek(target).then(() => {
+        if (audioRef.current !== audio) return;
+        if (audio.ended || target >= audio.duration) completeSession(audio);
+        else reconcilePlaybackState(audio);
+      }, () => {
+        if (audioRef.current === audio) reconcilePlaybackState(audio);
+      });
+      return;
+    }
     const timelineDuration = timelineRef.current?.totalDurationSec ?? 0;
     const duration = Number.isFinite(audio.duration) && audio.duration > 0
       ? audio.duration
@@ -491,7 +505,8 @@ export function useClipPlayer({
 
   const skipBy = useCallback((deltaSec: number) => {
     const audio = audioRef.current;
-    if (!audio || audio instanceof NativeNarrationPlayer || !Number.isFinite(deltaSec)) return;
+    if (!audio || !Number.isFinite(deltaSec)) return;
+    if (audio instanceof NativeNarrationPlayer && !audio.supportsSeek) return;
     seekTo(audio.currentTime + deltaSec);
   }, [seekTo]);
 
@@ -977,7 +992,9 @@ export function useClipPlayer({
       // 7. Create an object URL and wire the HTMLAudioElement.
       let audio: NarrationPlayer;
       if (nativeBridge) {
-        audio = await createNativeNarrationPlayer(nativeBridge, blob, transferController.signal);
+        audio = await createNativeNarrationPlayer(
+          nativeBridge, blob, transferController.signal, practice ? "Pre-Practice" : "Pregame",
+        );
         if (cancelled) { audio.remove(); return; }
       } else {
         const blobUrl = URL.createObjectURL(blob);
@@ -993,6 +1010,9 @@ export function useClipPlayer({
       if (audio instanceof NativeNarrationPlayer) {
         setTotalSec(audio.duration);
         setNativeNarrationPlayer(audio);
+        audio.addEventListener("seekunavailable", () => {
+          if (!cancelled) setSeekRevision((revision) => revision + 1);
+        });
       }
       // FV-494 — stable "guided session in progress" contract for
       // ServiceWorkerRegistrar's deploy-takeover reload. The marker means "do
@@ -1145,7 +1165,10 @@ export function useClipPlayer({
       completeSession(audio);
       return;
     }
-    if (!audio.paused) {
+    // Native `paused` is a cached sample: the plugin may have paused itself
+    // (route loss, CarPlay unplug) since the last status. Always send the tap
+    // to the bridge, which is idempotent and re-reads status afterwards.
+    if (!audio.paused && !(audio instanceof NativeNarrationPlayer)) {
       reconcilePlaybackState(audio);
       return;
     }
@@ -1177,7 +1200,7 @@ export function useClipPlayer({
     // it fires immediately after — sees the correct intent state and does not
     // attempt to resume a deliberately-paused session.
     intendedPlayingRef.current = false;
-    if (audio.ended || audio.paused) {
+    if (audio.ended || (audio.paused && !(audio instanceof NativeNarrationPlayer))) {
       reconcilePlaybackState(audio);
       return;
     }

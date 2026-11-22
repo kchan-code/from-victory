@@ -34,6 +34,7 @@ public class FVNarrationPlugin extends Plugin {
     private final ServiceConnection connection = new ServiceConnection() {
         @Override public void onServiceConnected(ComponentName name, IBinder binder) {
             service = ((FVNarrationService.LocalBinder) binder).getService();
+            service.setStateListener(event -> notifyListeners("stateChange", event));
             for (Pending item : new ArrayList<>(pending)) execute(item);
             pending.clear();
         }
@@ -85,6 +86,7 @@ public class FVNarrationPlugin extends Plugin {
     @PluginMethod public void prepare(PluginCall call) { dispatch(call, FVNarrationService::prepare); }
     @PluginMethod public void play(PluginCall call) { dispatch(call, FVNarrationService::play); }
     @PluginMethod public void pause(PluginCall call) { dispatch(call, FVNarrationService::pause); }
+    @PluginMethod public void seek(PluginCall call) { dispatch(call, FVNarrationService::seek); }
     @PluginMethod public void setVolume(PluginCall call) { dispatch(call, FVNarrationService::setVolume); }
     @PluginMethod public void getStatus(PluginCall call) { dispatch(call, FVNarrationService::getStatus); }
     @PluginMethod public void dispose(PluginCall call) { dispatch(call, FVNarrationService::dispose); }
@@ -93,7 +95,7 @@ public class FVNarrationPlugin extends Plugin {
             destroyed = true;
             bridge.removeWebViewListener(navigation);
             rejectPending("Narration bridge closed");
-            if (service != null) service.reset();
+            if (service != null) { service.setStateListener(null); service.reset(); }
             if (bound) getContext().unbindService(connection);
             bound = false;
             service = null;

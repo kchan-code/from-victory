@@ -43,6 +43,8 @@ public class FVNarrationService extends Service {
     private String state = "ready";
     private double duration;
     private double lastPosition;
+    // seekTo is asynchronous: report the clamped target until it lands.
+    private double pendingSeek = -1;
     private double volume = 1;
     private PluginCall preparing;
     private PluginCall starting;
@@ -51,8 +53,12 @@ public class FVNarrationService extends Service {
         .setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_SPEECH).build();
     private AudioManager.OnAudioFocusChangeListener focusListener;
     private long focusGeneration;
+    /** Receives every playback transition so JS can reconcile without waiting for a poll. */
+    interface StateListener { void onState(JSObject event); }
+    private StateListener stateListener;
+    void setStateListener(StateListener listener) { stateListener = listener; }
     private final BroadcastReceiver noisy = new BroadcastReceiver() {
-        @Override public void onReceive(Context context, Intent intent) { pausePlayback(); }
+        @Override public void onReceive(Context context, Intent intent) { pausePlayback("routeChange"); }
     };
     public final class LocalBinder extends Binder { FVNarrationService getService() { return FVNarrationService.this; } }
     @Override public IBinder onBind(Intent intent) { return binder; }
@@ -110,10 +116,18 @@ public class FVNarrationService extends Service {
         });
         candidate.setOnCompletionListener(value -> {
             if (value != player) return;
+            if ("ended".equals(state)) return;
             lastPosition = duration;
             state = "ended";
             releaseFocus();
             stopPlaybackService();
+            emit("ended");
+        });
+        candidate.setOnSeekCompleteListener(value -> {
+            if (value != player || pendingSeek < 0) return;
+            pendingSeek = -1;
+            if ("playing".equals(state)) lastPosition = value.getCurrentPosition() / 1000.0;
+            emit("seek");
         });
         candidate.setOnErrorListener((value, what, extra) -> {
             if (value != player) return true;
@@ -122,6 +136,7 @@ public class FVNarrationService extends Service {
             if (starting != null) { starting.reject("Cannot play narration"); starting = null; }
             releaseFocus();
             stopPlaybackService();
+            emit("error");
             return true;
         });
         try {
@@ -137,6 +152,7 @@ public class FVNarrationService extends Service {
     }
     void play(PluginCall call) {
         String id = requireSession(call);
+        reconcileSystemPause();
         if ("ended".equals(state) || "playing".equals(state)) { call.resolve(); return; }
         if (player == null || preparing != null || "error".equals(state)) throw new IllegalStateException("Narration not ready");
         if (starting != null) { call.reject("Narration is starting"); return; }
@@ -152,7 +168,7 @@ public class FVNarrationService extends Service {
     }
     @Override public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null && ACTION_PAUSE.equals(intent.getAction())) {
-            if (transfer != null && transfer.sessionId.equals(intent.getStringExtra("sessionId"))) pausePlayback();
+            if (transfer != null && transfer.sessionId.equals(intent.getStringExtra("sessionId"))) pausePlayback("notificationPause");
             return START_NOT_STICKY;
         }
         // Fulfil the foreground-service handshake even if a queued play was cancelled.
@@ -172,11 +188,13 @@ public class FVNarrationService extends Service {
             PluginCall started = starting;
             starting = null;
             started.resolve();
+            emit("play");
         } catch (RuntimeException exception) {
             if (starting != null) { starting.reject("Cannot start narration", "NARRATION_START_FAILED", exception); starting = null; }
             state = "paused";
             releaseFocus();
             stopPlaybackService();
+            emit("playFailed");
         }
         return START_NOT_STICKY;
     }
@@ -202,7 +220,7 @@ public class FVNarrationService extends Service {
         long generation = ++focusGeneration;
         focusListener = change -> {
             // Ignore callbacks queued for an abandoned, older playback request.
-            if (generation == focusGeneration && change < 0) pausePlayback();
+            if (generation == focusGeneration && change < 0) pausePlayback("interruptionBegan");
         };
         int result;
         if (Build.VERSION.SDK_INT >= 26) {
@@ -229,17 +247,65 @@ public class FVNarrationService extends Service {
         stopForeground(STOP_FOREGROUND_REMOVE);
         stopSelf(); // A bound service keeps the prepared session for an explicit resume.
     }
-    private void pausePlayback() {
+    private void pausePlayback(String reason) {
         if (starting != null) { starting.reject("Narration start cancelled"); starting = null; }
+        boolean changed = false;
         if (player != null && "playing".equals(state)) {
-            lastPosition = player.getCurrentPosition() / 1000.0;
+            lastPosition = livePosition();
             player.pause();
             state = "paused";
+            changed = true;
         }
         releaseFocus();
         stopPlaybackService();
+        if (changed) emit(reason);
     }
-    void pause(PluginCall call) { requireSession(call); pausePlayback(); call.resolve(); }
+    /** Never report "playing" for a player the system has already stopped. */
+    private void reconcileSystemPause() {
+        if (player == null || !"playing".equals(state)) return;
+        boolean active;
+        try { active = player.isPlaying(); } catch (IllegalStateException exception) { active = false; }
+        if (!active) pausePlayback("system");
+    }
+    private double livePosition() {
+        if ("ended".equals(state)) return duration;
+        if (pendingSeek >= 0) return pendingSeek;
+        if (player != null && "playing".equals(state)) return player.getCurrentPosition() / 1000.0;
+        return lastPosition;
+    }
+    private void emit(String reason) {
+        if (stateListener == null || transfer == null) return;
+        stateListener.onState(new JSObject().put("sessionId", transfer.sessionId)
+            .put("playing", "playing".equals(state)).put("position", livePosition()).put("duration", duration)
+            .put("reason", reason).put("state", state));
+    }
+    void pause(PluginCall call) { requireSession(call); pausePlayback("pause"); call.resolve(); }
+    /** Clamped. Landing on the end completes exactly once, like a natural finish. */
+    void seek(PluginCall call) {
+        requireSession(call);
+        Double requested = call.getDouble("position");
+        if (requested == null || requested.isNaN() || requested.isInfinite()) throw new IllegalArgumentException("Invalid narration position");
+        if (player == null || preparing != null ||
+            !("ready".equals(state) || "paused".equals(state) || "playing".equals(state))) throw new IllegalStateException("Narration not ready");
+        double target = Math.max(0, Math.min(duration, requested));
+        if (target >= duration) {
+            if (starting != null) { starting.reject("Narration start cancelled"); starting = null; }
+            if ("playing".equals(state)) player.pause();
+            pendingSeek = -1;
+            lastPosition = duration;
+            state = "ended";
+            releaseFocus();
+            stopPlaybackService();
+            emit("ended");
+            call.resolve();
+            return;
+        }
+        pendingSeek = target;
+        lastPosition = target;
+        player.seekTo((int) Math.round(target * 1000));
+        emit("seek");
+        call.resolve();
+    }
     void setVolume(PluginCall call) {
         double nextVolume = NarrationVolume.validate(
             call.getString("sessionId"), transfer == null ? null : transfer.sessionId,
@@ -254,7 +320,8 @@ public class FVNarrationService extends Service {
     }
     void getStatus(PluginCall call) {
         requireSession(call);
-        if (player != null && "playing".equals(state)) lastPosition = player.getCurrentPosition() / 1000.0;
+        reconcileSystemPause();
+        lastPosition = livePosition();
         JSObject result = new JSObject().put("position", lastPosition).put("duration", duration).put("state", state).put("volume", volume);
         if ("error".equals(state)) result.put("error", "Narration playback failed");
         call.resolve(result);
@@ -274,6 +341,7 @@ public class FVNarrationService extends Service {
         state = "ready";
         duration = 0;
         lastPosition = 0;
+        pendingSeek = -1;
         volume = 1;
     }
     @Override public void onTaskRemoved(Intent rootIntent) { reset(); super.onTaskRemoved(rootIntent); }
