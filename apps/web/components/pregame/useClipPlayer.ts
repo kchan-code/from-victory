@@ -472,8 +472,19 @@ export function useClipPlayer({
 
   const seekTo = useCallback((seconds: number) => {
     const audio = audioRef.current;
-    if (!audio || audio instanceof NativeNarrationPlayer) return;
-    if (!Number.isFinite(seconds)) return;
+    if (!audio || !Number.isFinite(seconds)) return;
+    if (audio instanceof NativeNarrationPlayer) {
+      if (!audio.supportsSeek || completedRef.current || audio.ended) return;
+      const target = Math.min(audio.duration, Math.max(0, seconds));
+      audio.seek(target).then(() => {
+        if (audioRef.current !== audio) return;
+        if (audio.ended || target >= audio.duration) completeSession(audio);
+        else reconcilePlaybackState(audio);
+      }, () => {
+        if (audioRef.current === audio) reconcilePlaybackState(audio);
+      });
+      return;
+    }
     const timelineDuration = timelineRef.current?.totalDurationSec ?? 0;
     const duration = Number.isFinite(audio.duration) && audio.duration > 0
       ? audio.duration
@@ -491,7 +502,8 @@ export function useClipPlayer({
 
   const skipBy = useCallback((deltaSec: number) => {
     const audio = audioRef.current;
-    if (!audio || audio instanceof NativeNarrationPlayer || !Number.isFinite(deltaSec)) return;
+    if (!audio || !Number.isFinite(deltaSec)) return;
+    if (audio instanceof NativeNarrationPlayer && !audio.supportsSeek) return;
     seekTo(audio.currentTime + deltaSec);
   }, [seekTo]);
 

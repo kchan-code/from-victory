@@ -9,6 +9,17 @@ export type NarrationStatus = {
   error?: string;
   volume?: number;
 };
+/** Pushed by the plugin whenever native playback changes on its own or by
+ * command (play, pause, interruption, route loss, lock screen, seek, end). */
+export type NarrationStateEvent = {
+  sessionId: string;
+  playing: boolean;
+  position: number;
+  duration: number;
+  reason: string;
+  state?: NarrationStatus["state"];
+};
+export type NarrationListenerHandle = { remove: () => Promise<void> | void };
 export interface NarrationBridge {
   begin(options: { sessionId: string; byteLength: number }): Promise<void>;
   append(options: { sessionId: string; index: number; data: string }): Promise<void>;
@@ -18,6 +29,10 @@ export interface NarrationBridge {
   getStatus(options: { sessionId: string }): Promise<NarrationStatus>;
   dispose(options: { sessionId: string }): Promise<void>;
   setVolume?(options: { sessionId: string; volume: number }): Promise<{ volume: number }>;
+  // Optional: absent on shells built before FV-784.
+  seek?(options: { sessionId: string; position: number }): Promise<void>;
+  addListener?(eventName: "stateChange", listener: (event: NarrationStateEvent) => void):
+    Promise<NarrationListenerHandle> | NarrationListenerHandle;
 }
 export function getNarrationBridge(): NarrationBridge | null {
   if (typeof window === "undefined") return null;
@@ -80,6 +95,8 @@ export type NarrationPlayer = Pick<HTMLAudioElement,
 export class NativeNarrationPlayer extends EventTarget implements NarrationPlayer {
   readonly native = true;
   readonly supportsVolume: boolean;
+  readonly supportsSeek: boolean;
+  private stateListener: NarrationListenerHandle | null = null;
   volumeError: string | null = null;
   private pendingVolume: number | null = null;
   private volumeDrain: Promise<void> | null = null;
@@ -104,13 +121,49 @@ export class NativeNarrationPlayer extends EventTarget implements NarrationPlaye
     super();
     this.duration = duration;
     this.supportsVolume = typeof bridge.setVolume === "function";
+    this.supportsSeek = typeof bridge.seek === "function";
     if (this.supportsVolume) {
       this.unsubscribeVolume = subscribeNarrationVolume(() => { void this.applyVolume(); });
     }
     this.marker.hidden = true;
     document.body.appendChild(this.marker);
+    // Events reconcile immediately; the poll stays as a fallback for shells
+    // without events and for anything delivered while the WebView slept.
     this.timer = setInterval(() => this.poll(), 250);
     document.addEventListener("visibilitychange", this.refreshVisible);
+    this.subscribeState();
+  }
+  private subscribeState(): void {
+    if (typeof this.bridge.addListener !== "function") return;
+    const release = (handle: NarrationListenerHandle | null | undefined) => {
+      try { void Promise.resolve(handle?.remove?.()).catch(() => undefined); } catch { /* harmless */ }
+    };
+    try {
+      Promise.resolve(this.bridge.addListener("stateChange", (event) => this.onStateChange(event)))
+        .then((handle) => { if (this.disposed) release(handle); else this.stateListener = handle; })
+        .catch(() => undefined);
+    } catch {
+      // Polling still reconciles state.
+    }
+  }
+  private onStateChange(event: NarrationStateEvent | null | undefined): void {
+    if (this.disposed || this.ended || !event || event.sessionId !== this.sessionId) return;
+    const state = event.state ?? (event.playing ? "playing" : "paused");
+    try {
+      this.accept({ position: event.position, duration: event.duration, state });
+    } catch {
+      this.fail();
+    }
+  }
+  /** Seeks the native player. Reaching the end completes natively, which then
+   * arrives here as the single "ended" event. */
+  seek(position: number): Promise<void> {
+    return this.enqueue(async () => {
+      if (this.disposed || this.ended || !this.supportsSeek || !Number.isFinite(position)) return;
+      const target = Math.min(this.duration, Math.max(0, position));
+      await bounded(this.bridge.seek!({ sessionId: this.sessionId, position: target }));
+      if (!this.disposed) this.accept(await bounded(this.bridge.getStatus({ sessionId: this.sessionId })));
+    });
   }
   /** Coalesce rapid slider changes independently of play/pause/status work.
    * Rejections are visible but nonfatal: never stop narration or seize focus. */
@@ -202,6 +255,8 @@ export class NativeNarrationPlayer extends EventTarget implements NarrationPlaye
     this.disposed = true;
     this.unsubscribeVolume();
     this.pendingVolume = null;
+    try { void Promise.resolve(this.stateListener?.remove()).catch(() => undefined); } catch { /* harmless */ }
+    this.stateListener = null;
     clearInterval(this.timer);
     document.removeEventListener("visibilitychange", this.refreshVisible);
     this.marker.remove();

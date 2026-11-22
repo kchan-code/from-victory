@@ -1592,8 +1592,10 @@ export function AudioSessionScreen({
   const canShowSeekPanel =
     isClipActive &&
     !renderCompleted &&
-    !clipPlayer.nativeNarrationPlayer &&
-    !getNarrationBridge();
+    // Native shells built before FV-784 have no seek; keep the panel hidden there.
+    (clipPlayer.nativeNarrationPlayer
+      ? clipPlayer.nativeNarrationPlayer.supportsSeek === true
+      : !getNarrationBridge());
   const [scrubDraftSec, setScrubDraftSec] = useState<number | null>(null);
   const [scrubDragging, setScrubDragging] = useState(false);
   const scrubMaxSec = Math.max(0, Math.floor(renderTotal));
