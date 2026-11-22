@@ -236,7 +236,8 @@ public class FVNarrationPlugin: CAPPlugin, CAPBridgedPlugin, AVAudioPlayerDelega
         DispatchQueue.main.async {
             guard self.matches(call) else { return }
             self.reconcileSystemPause("system")
-            var result: [String: Any] = ["position": self.currentPosition, "duration": self.player?.duration ?? 0,
+            let duration: Double = self.player?.duration ?? 0
+            var result: [String: Any] = ["position": self.currentPosition, "duration": duration,
                                        "state": self.state, "volume": self.volume]
             if let failure = self.failure { result["error"] = failure }
             call.resolve(result)
@@ -302,7 +303,7 @@ public class FVNarrationPlugin: CAPPlugin, CAPBridgedPlugin, AVAudioPlayerDelega
     }
 
     private var currentPosition: Double {
-        let duration = player?.duration ?? 0
+        let duration: Double = player?.duration ?? 0
         return state == "ended" ? duration : (player?.currentTime ?? 0)
     }
 
@@ -366,7 +367,7 @@ public class FVNarrationPlugin: CAPPlugin, CAPBridgedPlugin, AVAudioPlayerDelega
 
     private func emitState(_ reason: String) {
         guard let sessionId else { return }
-        let duration = player?.duration ?? 0
+        let duration: Double = player?.duration ?? 0
         let position = currentPosition
         notifyListeners("stateChange", data: [
             "sessionId": sessionId, "playing": state == "playing", "position": position,
@@ -376,9 +377,9 @@ public class FVNarrationPlugin: CAPPlugin, CAPBridgedPlugin, AVAudioPlayerDelega
             MPNowPlayingInfoCenter.default().nowPlayingInfo = [
                 MPMediaItemPropertyTitle: nowPlayingTitle,
                 MPMediaItemPropertyArtist: "From Victory",
-                MPMediaItemPropertyPlaybackDuration: duration,
-                MPNowPlayingInfoPropertyElapsedPlaybackTime: position,
-                MPNowPlayingInfoPropertyPlaybackRate: state == "playing" ? 1.0 : 0.0,
+                MPMediaItemPropertyPlaybackDuration: NSNumber(value: duration),
+                MPNowPlayingInfoPropertyElapsedPlaybackTime: NSNumber(value: position),
+                MPNowPlayingInfoPropertyPlaybackRate: NSNumber(value: state == "playing" ? 1.0 : 0.0),
             ]
         } else {
             MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
@@ -413,8 +414,8 @@ public class FVNarrationPlugin: CAPPlugin, CAPBridgedPlugin, AVAudioPlayerDelega
             }
             return self.startPlayback("remotePlay") ? .success : .commandFailed
         }
-        center.skipBackwardCommand.preferredIntervals = [15]
-        center.skipForwardCommand.preferredIntervals = [15]
+        center.skipBackwardCommand.preferredIntervals = [NSNumber(value: 15)]
+        center.skipForwardCommand.preferredIntervals = [NSNumber(value: 15)]
         add(center.skipBackwardCommand) { [weak self] event in
             guard let self, let player = self.player else { return .noActionableNowPlayingItem }
             let interval = (event as? MPSkipIntervalCommandEvent)?.interval ?? 15
@@ -501,6 +502,7 @@ public class FVNarrationPlugin: CAPPlugin, CAPBridgedPlugin, AVAudioPlayerDelega
 
     deinit {
         observers.forEach { NotificationCenter.default.removeObserver($0) }
+        disableRemoteControls()
         player?.stop()
         try? writer?.close()
         if let url = fileURL { try? FileManager.default.removeItem(at: url) }
