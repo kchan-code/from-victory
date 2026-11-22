@@ -46,6 +46,22 @@ export function getNarrationBridge(): NarrationBridge | null {
     .every((method) => typeof bridge[method as keyof NarrationBridge] === "function")
     ? bridge : null;
 }
+type PluginHeader = { name?: unknown; methods?: unknown };
+/** Capacitor's registerPlugin Proxy returns a function for every property, so
+ * `typeof` cannot tell which methods the installed binary has. PluginHeaders
+ * can. Returns null when no header describes FVNarration. */
+function nativeDeclares(method: string): boolean | null {
+  if (typeof window === "undefined") return null;
+  const headers = (window as unknown as { Capacitor?: { PluginHeaders?: unknown } }).Capacitor?.PluginHeaders;
+  if (!Array.isArray(headers)) return null;
+  const header = (headers as (PluginHeader | null)[]).find((entry) => entry?.name === "FVNarration");
+  if (!header || !Array.isArray(header.methods)) return null;
+  return (header.methods as ({ name?: unknown } | null)[]).some((entry) => entry?.name === method);
+}
+function isUnimplemented(error: unknown): boolean {
+  const detail = error as { code?: unknown; message?: unknown } | null;
+  return detail?.code === "UNIMPLEMENTED" || /not implemented/i.test(String(detail?.message ?? ""));
+}
 // Ephemeral preference only: resets on page reload, never stored or sent to a server.
 let desiredNarrationVolume = 1;
 const volumeListeners = new Set<() => void>();
@@ -97,7 +113,11 @@ export type NarrationPlayer = Pick<HTMLAudioElement,
 export class NativeNarrationPlayer extends EventTarget implements NarrationPlayer {
   readonly native = true;
   readonly supportsVolume: boolean;
-  readonly supportsSeek: boolean;
+  private seekAvailable: boolean;
+  /** False on builds without seek, or once the bridge reports it unimplemented. */
+  get supportsSeek(): boolean { return this.seekAvailable; }
+  // Bumped per stateChange; a getStatus reply that started earlier is dropped.
+  private eventSeq = 0;
   private stateListener: NarrationListenerHandle | null = null;
   volumeError: string | null = null;
   private pendingVolume: number | null = null;
@@ -123,7 +143,7 @@ export class NativeNarrationPlayer extends EventTarget implements NarrationPlaye
     super();
     this.duration = duration;
     this.supportsVolume = typeof bridge.setVolume === "function";
-    this.supportsSeek = typeof bridge.seek === "function";
+    this.seekAvailable = nativeDeclares("seek") ?? typeof bridge.seek === "function";
     if (this.supportsVolume) {
       this.unsubscribeVolume = subscribeNarrationVolume(() => { void this.applyVolume(); });
     }
@@ -151,6 +171,7 @@ export class NativeNarrationPlayer extends EventTarget implements NarrationPlaye
   private onStateChange(event: NarrationStateEvent | null | undefined): void {
     if (this.disposed || this.ended || !event || event.sessionId !== this.sessionId) return;
     const state = event.state ?? (event.playing ? "playing" : "paused");
+    this.eventSeq += 1;
     try {
       this.accept({ position: event.position, duration: event.duration, state });
     } catch {
@@ -163,9 +184,21 @@ export class NativeNarrationPlayer extends EventTarget implements NarrationPlaye
     return this.enqueue(async () => {
       if (this.disposed || this.ended || !this.supportsSeek || !Number.isFinite(position)) return;
       const target = Math.min(this.duration, Math.max(0, position));
-      await bounded(this.bridge.seek!({ sessionId: this.sessionId, position: target }));
-      if (!this.disposed) this.accept(await bounded(this.bridge.getStatus({ sessionId: this.sessionId })));
+      try {
+        await bounded(this.bridge.seek!({ sessionId: this.sessionId, position: target }));
+      } catch (error) {
+        if (!isUnimplemented(error)) throw error;
+        this.seekAvailable = false;
+        if (!this.disposed) this.dispatchEvent(new Event("seekunavailable"));
+        return;
+      }
+      if (!this.disposed) await this.refresh();
     });
+  }
+  private async refresh(): Promise<void> {
+    const seq = this.eventSeq;
+    const status = await bounded(this.bridge.getStatus({ sessionId: this.sessionId }));
+    if (!this.disposed && seq === this.eventSeq) this.accept(status);
   }
   /** Coalesce rapid slider changes independently of play/pause/status work.
    * Rejections are visible but nonfatal: never stop narration or seize focus. */
@@ -231,7 +264,7 @@ export class NativeNarrationPlayer extends EventTarget implements NarrationPlaye
     if (this.disposed || this.polling || this.ended) return;
     this.polling = true;
     void this.enqueue(async () => {
-      if (!this.disposed) this.accept(await bounded(this.bridge.getStatus({ sessionId: this.sessionId })));
+      if (!this.disposed) await this.refresh();
     }).catch(() => this.fail()).finally(() => { this.polling = false; });
   }
   play(): Promise<void> {
@@ -240,14 +273,14 @@ export class NativeNarrationPlayer extends EventTarget implements NarrationPlaye
       await this.applyVolume();
       if (this.disposed || this.ended) return;
       await bounded(this.bridge.play({ sessionId: this.sessionId }));
-      if (!this.disposed) this.accept(await bounded(this.bridge.getStatus({ sessionId: this.sessionId })));
+      if (!this.disposed) await this.refresh();
     });
   }
   pause(): void {
     void this.enqueue(async () => {
       if (this.disposed || this.ended) return;
       await bounded(this.bridge.pause({ sessionId: this.sessionId }));
-      if (!this.disposed) this.accept(await bounded(this.bridge.getStatus({ sessionId: this.sessionId })));
+      if (!this.disposed) await this.refresh();
     }).catch(() => this.fail());
   }
   setAttribute(name: string, value: string): void { this.marker.setAttribute(name, value); }

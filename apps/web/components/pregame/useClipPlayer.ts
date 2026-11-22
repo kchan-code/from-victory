@@ -295,6 +295,9 @@ export function useClipPlayer({
   // ── state ──
   const [ready, setReady] = useState(false);
   const [nativeNarrationPlayer, setNativeNarrationPlayer] = useState<NativeNarrationPlayer | null>(null);
+  // Re-render when the native player discovers seek is unavailable, so the
+  // seek panel hides on builds that only claimed to support it.
+  const [, setSeekRevision] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [elapsedSec, setElapsedSec] = useState(0);
   const [totalSec, setTotalSec] = useState(0);
@@ -1007,6 +1010,9 @@ export function useClipPlayer({
       if (audio instanceof NativeNarrationPlayer) {
         setTotalSec(audio.duration);
         setNativeNarrationPlayer(audio);
+        audio.addEventListener("seekunavailable", () => {
+          if (!cancelled) setSeekRevision((revision) => revision + 1);
+        });
       }
       // FV-494 — stable "guided session in progress" contract for
       // ServiceWorkerRegistrar's deploy-takeover reload. The marker means "do
