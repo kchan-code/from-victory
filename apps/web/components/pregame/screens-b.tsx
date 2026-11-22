@@ -1570,6 +1570,13 @@ export function AudioSessionScreen({
   const renderPlaying = isClipActive ? clipPlayer.playing : playing;
   const renderCompleted = isClipActive ? clipPlayer.completed : completed;
 
+  const formatClock = (seconds: number): string => {
+    const bounded = Math.max(0, Math.floor(seconds));
+    const mins = Math.floor(bounded / 60);
+    const secs = bounded % 60;
+    return `${mins}:${String(secs).padStart(2, "0")}`;
+  };
+
   const remaining = Math.max(0, renderTotal - renderElapsed);
   const mm = Math.floor(remaining / 60);
   const ss = Math.floor(remaining % 60);
@@ -1582,6 +1589,28 @@ export function AudioSessionScreen({
   // hook. Decoding starts on mount so this window is brief — no layout shift
   // since disabled:opacity-50 is already wired on the button (no size change).
   const clipLoading = isClipActive && !clipPlayer.ready && !renderCompleted;
+  const canShowSeekPanel =
+    isClipActive &&
+    !renderCompleted &&
+    !clipPlayer.nativeNarrationPlayer &&
+    !getNarrationBridge();
+  const [scrubDraftSec, setScrubDraftSec] = useState<number | null>(null);
+  const [scrubDragging, setScrubDragging] = useState(false);
+  const scrubMaxSec = Math.max(0, Math.floor(renderTotal));
+  const liveScrubSec = Math.min(Math.floor(renderElapsed), scrubMaxSec);
+  const scrubValueSec = scrubDraftSec ?? liveScrubSec;
+  const commitScrub = (nextSeconds: number) => {
+    const bounded = Math.min(scrubMaxSec, Math.max(0, Math.floor(nextSeconds)));
+    setScrubDragging(false);
+    setScrubDraftSec(null);
+    clipPlayer.seekTo(bounded);
+  };
+  useEffect(() => {
+    if (!canShowSeekPanel) {
+      setScrubDragging(false);
+      setScrubDraftSec(null);
+    }
+  }, [canShowSeekPanel]);
 
   // FV-112 diagnostic readout. Enabled by ?debug=1 (desktop) OR by tapping the
   // step label 5× (the only way to reach it inside an installed iOS PWA, where
@@ -1932,6 +1961,73 @@ export function AudioSessionScreen({
             <NarrationVolumeControl player={clipPlayer.nativeNarrationPlayer} placement="transport" />
           )}
         </div>
+
+        {canShowSeekPanel && (
+          <div className="rounded-[12px] border border-hairline px-3 py-3">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-cream/55">
+                Position
+              </span>
+              <span className="font-mono text-[11px] tracking-[0.14em] text-cream/75">
+                {formatClock(scrubValueSec)} / {formatClock(renderTotal)}
+              </span>
+            </div>
+            <input
+              type="range"
+              min={0}
+              max={scrubMaxSec}
+              step={1}
+              value={scrubValueSec}
+              onChange={(event) => {
+                const nextValue = Number(event.currentTarget.value);
+                if (scrubDragging) {
+                  setScrubDraftSec(nextValue);
+                } else {
+                  commitScrub(nextValue);
+                }
+              }}
+              onPointerDown={() => {
+                setScrubDragging(true);
+              }}
+              onPointerUp={(event) => {
+                commitScrub(Number(event.currentTarget.value));
+              }}
+              onPointerCancel={() => {
+                setScrubDragging(false);
+                setScrubDraftSec(null);
+              }}
+              onBlur={(event) => {
+                if (scrubDragging) {
+                  commitScrub(Number(event.currentTarget.value));
+                }
+              }}
+              aria-label="Scrub guided session position"
+              aria-valuetext={`${formatClock(scrubValueSec)} of ${formatClock(renderTotal)}`}
+              disabled={clipLoading}
+              className="block min-h-[44px] w-full cursor-pointer accent-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 disabled:opacity-50"
+            />
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={clipPlayer.skipBackward15}
+                disabled={clipLoading}
+                aria-label="Skip back 15 seconds"
+                className="min-h-[44px] rounded-pill border border-hairline px-3 py-2.5 font-heading text-[13px] font-semibold text-cream/80 transition-colors duration-fast hover:text-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 disabled:opacity-50"
+              >
+                -15s
+              </button>
+              <button
+                type="button"
+                onClick={clipPlayer.skipForward15}
+                disabled={clipLoading}
+                aria-label="Skip forward 15 seconds"
+                className="min-h-[44px] rounded-pill border border-hairline px-3 py-2.5 font-heading text-[13px] font-semibold text-cream/80 transition-colors duration-fast hover:text-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 disabled:opacity-50"
+              >
+                +15s
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Accessible alternative for deaf/HoH athletes or loud environments.
             Only shown in audio mode — once switched to text mode this row
