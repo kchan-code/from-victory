@@ -258,12 +258,14 @@ export default function PrivacyPage() {
           <strong>In the Android app.</strong> Subscriptions bought in our Android app are
           sold and billed by Google through your Google Play account, as an in-app purchase.
           Google does <strong>not</strong> share your payment card details with us. From
-          Google we receive, and store, only what is needed to recognize and manage the
-          subscription: a Google Play purchase token for the subscription (and, if the
+          Google we store only what is needed to recognize and manage the subscription: a Google Play purchase token for the subscription (and, if the
           purchase replaced an earlier one, the earlier purchase&apos;s token), which plan
           and offer were purchased, the subscription status, its renewal or expiration date,
           whether automatic renewal is on, whether the purchase has been acknowledged to
-          Google, and whether Google marked it as a test purchase. We also store an
+          Google, whether Google marked it as a test purchase, and when we last confirmed the
+          subscription with Google. Google&apos;s answers to us can contain more than we
+          keep, for example an order number. We do not store an order number in our
+          database. We also store an
           identifier we generate ourselves to connect the purchase to your From Victory
           account; we give that identifier to Google Play when you start a purchase, and
           Google returns it to us with the purchase. Google sends us notices when a
@@ -600,13 +602,37 @@ export default function PrivacyPage() {
           If you subscribed in our Android app, deleting your account deletes the Google Play
           purchase information we hold for it, and we ask Google to stop any Google Play
           subscription we have on record for the account from renewing. This does{" "}
-          <strong>not</strong> refund a payment already made. If we cannot confirm that
-          Google stopped the renewal, we tell you when the deletion finishes; in that case,
-          cancel the subscription in the Subscriptions section of Google Play, or Google will
-          continue to bill you. When that happens, we also receive an internal alert so we
-          can follow up, which can include the Google order number, the plan, and the
-          subscription&apos;s status and end date. Google keeps its own records of your
-          purchases under its own policies.
+          <strong>not</strong> refund a payment already made.
+        </p>
+        <p className="mt-3">
+          If we cannot confirm that Google stopped the renewal, a message on the screen tells
+          you so when the deletion finishes. In that case, cancel the subscription in the
+          Subscriptions section of Google Play, or Google will continue to bill you.
+        </p>
+        <p className="mt-3">
+          When that happens we also send ourselves an alert by email, through our email
+          provider, so that we can follow up. If Google refused or did not answer the
+          request, the alert contains, for each subscription: the name of our Android app,
+          the plan, the Google order number of the most recent payment if we could read it,
+          the subscription&apos;s status and end date as we last recorded them, and a short
+          one-way code made from part of the Google purchase token. It does not contain your
+          name, your email address, or your From Victory account identifier. Because it
+          contains a Google order number, it is the one record connected to your purchase
+          that remains with us after your account is deleted. If instead we could not read
+          our own records of your purchase, the alert says only that, and contains none of
+          those details.
+        </p>
+        {/* FV-667 MERGE PRECONDITION: the next paragraph is true only once a
+            mailbox rule or dated sweep deletes each alert within 30 days and
+            the alert mailbox is confirmed to be the owner's alone (KC decision
+            2026-11-19). Do not publish it before that exists. */}
+        <p className="mt-3">
+          Only the owner of From Victory can read these alerts, and we delete each one within
+          30 days of receiving it. Our email provider may keep its own delivery records under
+          its own policies.
+        </p>
+        <p className="mt-3">
+          Google keeps its own records of your purchases under its own policies.
         </p>
         <p className="mt-3">
           For step-by-step deletion instructions — including the path for a minor athlete — see

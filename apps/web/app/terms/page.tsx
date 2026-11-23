@@ -421,15 +421,15 @@ export default function TermsPage() {
           <strong>Subscriptions bought in our Android app</strong> are sold and billed by
           Google through your Google Play account, and Google&rsquo;s terms apply to the
           purchase. To cancel, use the Subscriptions section of Google Play before the end of
-          the current period. Refund requests for Google Play purchases are handled by Google
-          under its own policies.
+          the current period. Google&rsquo;s refund policies apply to purchases made through
+          Google Play. You can ask Google for a refund through your Google Play account.
         </p>
         <p className="mt-3">
           <strong>Deleting your account and a Google Play subscription.</strong> If you
           subscribed in our Android app and delete your From Victory account, we ask Google
           to stop the subscription from renewing. This does not refund a payment already
-          made. If we cannot confirm that the renewal was stopped, we tell you when the
-          deletion finishes, and you must cancel the subscription in Google Play, or Google
+          made. If we cannot confirm that the renewal was stopped, a message on the screen tells you so
+          when the deletion finishes, and you must cancel the subscription in Google Play, or Google
           will continue to bill you.
         </p>
         <p className="mt-3">
