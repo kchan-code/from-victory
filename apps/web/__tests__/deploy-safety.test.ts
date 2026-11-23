@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 import { describe, it, expect } from "vitest";
@@ -107,6 +107,30 @@ describe("migrate-before-deploy gate (FV-731, FV-777)", () => {
       const skipped = run(["-c", command], cwd, skip);
       expect(skipped.status).toBe(0);
       expect(skipped.stdout).toContain("Skipping");
+    }
+  });
+
+  it("keeps vercel.json in apps/web, where Vercel reads cron jobs from (FV-785)", () => {
+    // The Vercel project root is apps/web. Vercel registers `crons` only from
+    // the vercel.json in that directory. With the file only at the repo root,
+    // production had no cron jobs at all. The repo-root copy stays because the
+    // db-migrate workflow runs `vercel deploy` from the repo root. The two
+    // copies must not drift.
+    const rootCopy = readFileSync(path.join(REPO_ROOT, "vercel.json"), "utf8");
+    const appCopy = readFileSync(path.join(REPO_ROOT, "apps/web/vercel.json"), "utf8");
+    expect(appCopy).toBe(rootCopy);
+
+    const crons = (JSON.parse(appCopy).crons ?? []) as { path: string; schedule: string }[];
+    const cronDir = path.join(REPO_ROOT, "apps/web/app/api/cron");
+    const routes = readdirSync(cronDir, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => `/api/cron/${entry.name}`)
+      .sort();
+    // Every cron route is scheduled, and every schedule has a route.
+    expect(crons.map((cron) => cron.path).sort()).toEqual(routes);
+    for (const cron of crons) {
+      expect(existsSync(path.join(REPO_ROOT, "apps/web/app", cron.path, "route.ts"))).toBe(true);
+      expect(cron.schedule.trim().split(/\s+/)).toHaveLength(5);
     }
   });
 
