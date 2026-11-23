@@ -197,6 +197,11 @@ export interface AppleSubscribeSectionProps {
    * never blocks Manage/Restore.
    */
   currentAppleProductId?: string;
+  /**
+   * Server-resolved Apple history for this payer. Returning Apple payers are
+   * shown a paid-start reminder instead of first-time trial wording.
+   */
+  hasPriorAppleSubscription?: boolean;
 }
 
 type DisplayProduct = AppleProductConfig & { livePrice?: string };
@@ -583,6 +588,7 @@ export function AppleSubscribeSection({
   mode = "purchase",
   currentAppleCapacity,
   currentAppleProductId,
+  hasPriorAppleSubscription = false,
 }: AppleSubscribeSectionProps = {}) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -1188,7 +1194,9 @@ export function AppleSubscribeSection({
         data-testid="apple-purchase-note"
         className="mb-4 font-body text-cream/55 text-[13px] leading-relaxed"
       >
-        {APPLE_TERMS_NOTE}
+        {hasPriorAppleSubscription
+          ? "Your free trial has been used. Subscribing starts a paid plan today."
+          : APPLE_TERMS_NOTE}
       </p>
 
       <p

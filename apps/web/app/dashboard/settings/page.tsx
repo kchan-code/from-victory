@@ -211,10 +211,27 @@ export default async function DashboardSettingsPage() {
   // a false "No active subscription." Display-only; never feeds a
   // capacity/trial/purchase decision (see the accessor's doc comment).
   const appleResult = iosIap
-    ? await getDisplayedAppleProductIdResult(createServiceClient(), userId)
-    : { productId: null, readError: false };
+    ? await getDisplayedAppleProductIdResult(
+        createServiceClient(),
+        userId,
+        new Date(),
+        { includeBillingFields: true },
+      )
+    : { productId: null, readError: false, autoRenewStatus: null, expiresAt: null };
   const appleActive = appleResult.productId !== null;
   const appleReadError = appleResult.readError;
+  const appleStatusDetail = (() => {
+    const expiry = appleResult.expiresAt;
+    if (!expiry) return "Active";
+    if (appleResult.autoRenewStatus === true) {
+      return `Renews ${formatDate(expiry)}`;
+    }
+    const expiryMs = new Date(expiry).getTime();
+    if (appleResult.autoRenewStatus === false && Number.isFinite(expiryMs) && expiryMs > Date.now()) {
+      return `Cancelled, access ends ${formatDate(expiry)}`;
+    }
+    return "Active";
+  })();
 
   let googleManageState:
     | {
@@ -460,10 +477,10 @@ export default async function DashboardSettingsPage() {
                   Status
                 </p>
                 <span
-                  className="flex-shrink-0 font-heading font-semibold text-[12px] text-gold bg-gold/10 rounded-full px-3 py-1"
+                  className="flex-shrink-0 font-heading font-semibold text-[12px] text-gold bg-gold/10 rounded-full px-3 py-1 text-right"
                   data-testid="subscription-status"
                 >
-                  Active
+                  {appleStatusDetail}
                 </span>
               </div>
               <p className="font-body text-cream/70 text-[15px] leading-relaxed my-4">
