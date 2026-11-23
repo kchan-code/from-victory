@@ -8,6 +8,7 @@ import { getRequestShellCapability } from "@/lib/native-shell";
 import { isRestrictedShell } from "@/lib/native-shell-restricted";
 import {
   getActiveAppleProductId,
+  hasAnyAppleSubscriptionHistory,
   hasEverHeldAppleEntitlement,
 } from "@/lib/subscriptions/apple";
 import { capacityForAppleProduct } from "@/lib/subscriptions/apple-capacity";
@@ -180,6 +181,22 @@ export default async function SubscribePage(props: Props) {
       (entitlementState.status === "entitled" &&
         entitlementState.provider === "google"));
   const nativeShell = shellCapability !== null;
+  let hasPriorAppleSubscription = false;
+  if (shellCapability === "ios-iap" && entitlementState.status === "not_entitled") {
+    try {
+      hasPriorAppleSubscription = await hasAnyAppleSubscriptionHistory(
+        createServiceClient(),
+        userId,
+      );
+    } catch (error) {
+      console.error(
+        "[subscribe] Apple subscription history read failed; defaulting to first-time copy.",
+        error,
+      );
+      // Fail open for copy only: if this read fails, keep first-time wording.
+      hasPriorAppleSubscription = false;
+    }
+  }
 
   if (googlePlayUiEnabled && !isAdult && parentAthleteCount === null) {
     const supabase = await createClient();
@@ -417,7 +434,9 @@ export default async function SubscribePage(props: Props) {
               </p>
             </div>
           ) : shellCapability === "ios-iap" ? (
-            <AppleSubscribeSection />
+            <AppleSubscribeSection
+              hasPriorAppleSubscription={hasPriorAppleSubscription}
+            />
           ) : (
             <>
               {/* Plan selector form — trialEligible controls the trial banner */}

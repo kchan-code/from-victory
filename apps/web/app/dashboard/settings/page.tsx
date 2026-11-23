@@ -113,6 +113,7 @@ function isGoogleTrialActive(
 
 export default async function DashboardSettingsPage() {
   const { userId } = await requireParent();
+  const now = new Date();
 
   // Google Play "no in-app purchase" compliance: inside the Capacitor shell,
   // checkout.stripe.com has no reachable path (it's deliberately not in
@@ -211,10 +212,28 @@ export default async function DashboardSettingsPage() {
   // a false "No active subscription." Display-only; never feeds a
   // capacity/trial/purchase decision (see the accessor's doc comment).
   const appleResult = iosIap
-    ? await getDisplayedAppleProductIdResult(createServiceClient(), userId)
-    : { productId: null, readError: false };
+    ? await getDisplayedAppleProductIdResult(
+        createServiceClient(),
+        userId,
+        now,
+        { includeBillingFields: true },
+      )
+    : { productId: null, readError: false, autoRenewStatus: null, expiresAt: null };
   const appleActive = appleResult.productId !== null;
   const appleReadError = appleResult.readError;
+  const appleStatusDetail = (() => {
+    const expiry = appleResult.expiresAt;
+    if (!expiry) return "Active";
+    const expiryMs = new Date(expiry).getTime();
+    const hasFutureExpiry = Number.isFinite(expiryMs) && expiryMs > now.getTime();
+    if (appleResult.autoRenewStatus === true && hasFutureExpiry && !appleResult.paymentLapsed) {
+      return `Renews ${formatDate(expiry)}`;
+    }
+    if (appleResult.autoRenewStatus === false && hasFutureExpiry) {
+      return `Canceled, access ends ${formatDate(expiry)}`;
+    }
+    return "Active";
+  })();
 
   let googleManageState:
     | {
@@ -450,20 +469,20 @@ export default async function DashboardSettingsPage() {
             /* Apple-entitled payer (record §4.4 — Apple precedence over any
                Stripe/comp status). Price-free, accurate status + an in-app
                manage entry: StoreKit purchases route through Apple's own
-               management surface, not Stripe's portal, so there is no
-               Stripe status label, no renews/ends date (not read from
-               `apple_subscriptions` here — that stays behind the
-               centralized accessor), and no web-browser steer. */
+               management surface, not Stripe's portal. Apple renewal/cancel
+               status copy is derived via the centralized accessor (not an
+               ad hoc table read on this page), and there is no web-browser
+               steer. */
             <div className="py-2">
               <div className="flex items-center justify-between gap-4 py-3 border-b border-hairline">
                 <p className="font-heading font-semibold text-[13px] text-cream/50 uppercase tracking-[0.12em]">
                   Status
                 </p>
                 <span
-                  className="flex-shrink-0 font-heading font-semibold text-[12px] text-gold bg-gold/10 rounded-full px-3 py-1"
+                  className="flex-shrink-0 font-heading font-semibold text-[12px] text-gold bg-gold/10 rounded-full px-3 py-1 text-right"
                   data-testid="subscription-status"
                 >
-                  Active
+                  {appleStatusDetail}
                 </span>
               </div>
               <p className="font-body text-cream/70 text-[15px] leading-relaxed my-4">

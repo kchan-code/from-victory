@@ -408,6 +408,8 @@ export type ActiveAppleProductIdResult = {
    * decision is `getAppleAccessLevelForPayer`. Absent/false otherwise.
    */
   paymentLapsed?: boolean;
+  autoRenewStatus?: boolean | null;
+  expiresAt?: string | null;
 };
 
 /**
@@ -451,7 +453,9 @@ export async function getActiveAppleProductIdResult(
   service: ServiceClient,
   payerId: string,
   now: Date = new Date(),
+  options?: { includeBillingFields?: boolean },
 ): Promise<ActiveAppleProductIdResult> {
+  const includeBillingFields = options?.includeBillingFields === true;
   const { isAllowlisted, readError: allowlistReadError } =
     await readSandboxAllowlistMembership(service, payerId);
 
@@ -465,7 +469,7 @@ export async function getActiveAppleProductIdResult(
   const { data: rows, error: subsError } = await service
     .from("apple_subscriptions")
     .select(
-      "environment, product_id, status, expires_at, grace_period_expires_at",
+      "environment, product_id, status, expires_at, grace_period_expires_at, auto_renew_status",
     )
     .eq("payer_id", payerId);
 
@@ -506,7 +510,16 @@ export async function getActiveAppleProductIdResult(
       now,
     );
     if (level === "full" || level === "degraded") {
-      return { productId: row.product_id, readError: false };
+      return {
+        productId: row.product_id,
+        readError: false,
+        ...(includeBillingFields
+          ? {
+              autoRenewStatus: row.auto_renew_status,
+              expiresAt: row.expires_at,
+            }
+          : {}),
+      };
     }
   }
 
@@ -518,7 +531,17 @@ export async function getActiveAppleProductIdResult(
   // duplicate-purchase guard), even though training access is blocked.
   for (const row of ordered) {
     if (row.status === "in_billing_retry") {
-      return { productId: row.product_id, readError: false, paymentLapsed: true };
+      return {
+        productId: row.product_id,
+        readError: false,
+        paymentLapsed: true,
+        ...(includeBillingFields
+          ? {
+              autoRenewStatus: row.auto_renew_status,
+              expiresAt: row.expires_at,
+            }
+          : {}),
+      };
     }
   }
 
@@ -591,6 +614,30 @@ export async function getActiveAppleProductId(
  * @param now      Current time (injected for testability).
  */
 export const getDisplayedAppleProductIdResult = getActiveAppleProductIdResult;
+
+/**
+ * Returns true when the payer has ever had a Production Apple subscription
+ * row in any state. Used for payer-facing copy only (first-time vs returning
+ * wording) and intentionally matches the Production-only trial-history policy.
+ */
+export async function hasAnyAppleSubscriptionHistory(
+  service: ServiceClient,
+  payerId: string,
+): Promise<boolean> {
+  const { count, error } = await service
+    .from("apple_subscriptions")
+    .select("id", { count: "exact", head: true })
+    .eq("payer_id", payerId)
+    .eq("environment", "Production");
+
+  if (error) {
+    throw new Error(
+      `[subscriptions/apple] hasAnyAppleSubscriptionHistory read failed (payer=${payerId}): ${error.message}`,
+    );
+  }
+
+  return (count ?? 0) > 0;
+}
 
 // ---------------------------------------------------------------------------
 // getPendingAppleRenewalProductId — FV-602 read side for a SCHEDULED (not
