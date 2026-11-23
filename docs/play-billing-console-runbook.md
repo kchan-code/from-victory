@@ -242,9 +242,38 @@ grant: the push identity then holds no Play permission at all.
      is exchanged through Google workload identity federation and the Play API
      identity is impersonated. Two non-secret Vercel variables select it (step
      5): `GOOGLE_PLAY_WIF_PROVIDER` and `GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL`.
-   - **TO BE ADDED after KC approves the exact trust (FV-666):** the console
-     steps for the workload identity pool, the provider, and letting the
-     provider's identity impersonate the Play API identity.
+   - The trust below was approved by KC and created on 2026-11-21 (exact
+     values and the read-back are on FV-666). Do these in the billing
+     project, in order. `CHECK IN CONSOLE`
+     1. **Enable three APIs:** IAM, IAM Service Account Credentials, and
+        Security Token Service. Each should show "API Enabled".
+     2. **Create one workload identity pool** for Vercel production. Write
+        its ID on the worksheet.
+     3. **Add one OIDC provider to the pool.** Write its ID on the worksheet.
+        - Issuer: `https://oidc.vercel.com/<VERCEL_TEAM_SLUG>`. The Vercel
+          project's OIDC issuer mode must be "team".
+        - Audience: choose "Default audience". Do not add an allowed-audience
+          list. The default is
+          `https://iam.googleapis.com/projects/<PROJECT_NUMBER>/locations/global/workloadIdentityPools/<POOL_ID>/providers/<PROVIDER_ID>`,
+          which is what the server asks Vercel for.
+        - Attribute mapping: `google.subject = assertion.sub`. No other
+          mapping.
+        - Attribute condition, all three parts, production only:
+          `assertion.sub == 'owner:<VERCEL_TEAM_SLUG>:project:<VERCEL_PROJECT_NAME>:environment:production' && assertion.owner_id == '<VERCEL_TEAM_ID>' && assertion.project_id == '<VERCEL_PROJECT_ID>'`
+     4. **Give that one identity permission to act as the Play API
+        identity.** Open the Play API service account (not the project, and
+        not the pool's "Grant access" wizard) and add one principal with the
+        role **Workload Identity User** (`roles/iam.workloadIdentityUser`):
+        `principal://iam.googleapis.com/projects/<PROJECT_NUMBER>/locations/global/workloadIdentityPools/<POOL_ID>/subject/owner:<VERCEL_TEAM_SLUG>:project:<VERCEL_PROJECT_NAME>:environment:production`
+        The form may preselect a different role (it offered Service Account
+        Admin). Replace it before saving.
+     5. **Read it back.** The saved provider shows the issuer, the default
+        audience, one mapping and the full condition. The service account's
+        access list shows that one principal and nothing else new.
+   - Do **not**: use `principalSet://` or any wildcard; trust the Preview or
+     Development environment; grant a role on the project; create a key; ask
+     for an organization-policy exception. If the sharing policy refuses the
+     binding in step 4, stop and take it to KC.
 
 ### 3d. Pub/Sub topic
 
@@ -328,8 +357,13 @@ grant: the push identity then holds no Play permission at all.
    check in step 6, after Vercel is configured.
 
 **Check for step 3 (before Vercel):**
-- Cloud console shows the project, both APIs enabled, one topic, one push
-  subscription with authentication on, and two service accounts.
+- Cloud console shows the project, the Android Publisher and Pub/Sub APIs
+  enabled, one topic, one push subscription with authentication on, and two
+  service accounts.
+- Keyless: the IAM, IAM Service Account Credentials and Security Token
+  Service APIs are enabled; there is one pool with one provider whose
+  condition names the production environment; the Play API identity has one
+  Workload Identity User principal.
 - The topic's permissions list Google's notification sender as Publisher and
   nothing unexpected.
 - The Play API identity has zero keys (keyless; key creation is blocked). The push
@@ -337,12 +371,15 @@ grant: the push identity then holds no Play permission at all.
 - Play Console lists the Play API identity as a user with one permission on
   one app.
 
-**Undo for step 3:** everything here can be removed. Delete the push
-subscription, the topic, and any key; remove the service account from Play
+**Undo for step 3:** everything here can be removed. Remove the Workload
+Identity User principal from the Play API identity, then delete the provider
+and the pool (this alone stops the server from getting a Play token). Delete
+the push subscription and the topic; remove the service account from Play
 Console users; clear the topic name from the notifications setting; delete
-the service accounts; shut down the project. A deleted key cannot be
-recovered, which is the point. A project ID is not reusable after the project
-is shut down.
+the service accounts; shut down the project. Google keeps a deleted pool or
+provider for 30 days, and its ID cannot be reused in that time
+(`CHECK IN CONSOLE`). A project ID is not reusable after the project is
+shut down.
 
 ---
 
@@ -481,8 +518,12 @@ the trial lasts 3 minutes; record Section 8).
 
 Set these on the From Victory web project, **Production** environment only.
 The push endpoint is the production host. Names come from
-`apps/web/.env.example` (lines 192 to 221). Mark each one as sensitive if
-Vercel offers that. Never put them in a `NEXT_PUBLIC_` variable.
+`apps/web/.env.example`. None of the four values is a secret, but set them
+on Production only: the Google trust in step 3c accepts the production
+environment alone, so a Preview or Development copy could never work. Never
+put them in a `NEXT_PUBLIC_` variable. Never set `GOOGLE_SDK_NODE_LOGGING`
+on this project: with it set, Google's library writes access tokens to the
+log.
 
 | Variable name | Set it? | Where the value comes from |
 |---|---|---|
@@ -502,7 +543,8 @@ Vercel offers that. Never put them in a `NEXT_PUBLIC_` variable.
    runbook (FV-669) says so.
 3. Redeploy production. A changed variable does not reach the running site
    until the next deployment.
-4. If a key file was ever downloaded despite the org policy: delete it now.
+4. There is no key file in keyless mode. If one was ever created despite the
+   org policy, delete the key in Cloud console and the downloaded file.
 
 What you should expect after this step: the webhook authenticates each push
 and answers 200, and does nothing else. While the flag is unset it does not
@@ -513,9 +555,8 @@ read the message, call Google, or write to the database (`route.ts`,
 no `GOOGLE_PLAY_CATALOG_ACTIVE`. The newest production deployment is later
 than the last variable edit.
 **Undo:** delete the variables and redeploy. With the two Pub/Sub variables
-gone, every push is refused with 403 again. If a key was ever pasted
-somewhere it should not be, delete that key in Cloud console (step 3 undo)
-and create a new one.
+gone, every push is refused with 403 again. With either keyless variable
+gone, Play auth fails closed.
 
 ---
 
@@ -567,11 +608,33 @@ nothing about purchases.
 
 ### 6c. The Play API credential
 
-There is no way to prove this without code. What you can confirm by eye:
-Play Console lists the Play API identity with "Manage orders and
-subscriptions" on the From Victory app, and Cloud console shows the Android
-Publisher API enabled in the same project the service account belongs to.
-The real proof is the first verified test purchase in FV-668.
+Two separate things need proving.
+
+**The server can get a Google token (keyless exchange).** Run the manual
+GitHub workflow `play-auth-check` from `main` (Actions, "play-auth-check",
+"Run workflow"; or `gh workflow run play-auth-check.yml --ref main`). It
+makes one authenticated POST to `/api/internal/play-auth-check`, which does
+the token exchange and nothing else: no Play API call, no database, no
+purchase or billing change. It works with `GOOGLE_PLAY_CATALOG_ACTIVE`
+unset. The job log shows only the status and the result.
+
+| Result | Meaning | Fix |
+|---|---|---|
+| `http_status=200`, `result=pass` | Production exchanged its Vercel identity for a Google access token | None |
+| 503 | The exchange failed | Step 3c (pool, provider, condition, principal) and the two keyless variables in step 5; then redeploy |
+| 401 | The GitHub copy of `CRON_SECRET` differs from Vercel Production's | Set one new value in both places, redeploy, run again |
+| 500 | `CRON_SECRET` is not set in Vercel Production | Set it, redeploy |
+
+The workflow reads `CRON_SECRET` from the GitHub `Production` environment,
+which releases its secrets only to runs from `main`. First pass: 2026-11-22
+(FV-782).
+
+**The token is allowed to do the work (Play permission).** This cannot be
+proven without a purchase. What you can confirm by eye: Play Console lists
+the Play API identity with "Manage orders and subscriptions" on the From
+Victory app, and Cloud console shows the Android Publisher API enabled in
+the same project the service account belongs to. The real proof is the first
+verified test purchase in FV-668.
 
 ### 6d. Products
 
@@ -613,7 +676,7 @@ runbook.
 | Not in record | Any subscription description or benefits text | Step 4a |
 | G4 | The actual grace period option (expected 14 days); what the console shows for account hold | Step 4b |
 | G6 | Confirm KC owns Play Console and Google Cloud | Step 3a |
-| G7 | Key file or keyless federation | Step 3c, step 5 |
+| G7 | Key file or keyless federation. **Decided 2026-11-21: keyless** (FV-779) | Step 3c, step 5 |
 | G7 | One service account or two | Step 3c |
 | G7 / 7.6 | Whether any method needs "View financial data" | Only if FV-668 testing shows a permission error |
 | Not in record | Attaching a Cloud billing account, if Google requires one | Step 3a |
