@@ -20,6 +20,13 @@ enum NarrationFinish {
     ///   - duration: the reading's length, in seconds.
     static func classify(successfully: Bool, wasPlaying: Bool,
                          position: TimeInterval, duration: TimeInterval) -> Outcome {
-        successfully ? .ended : .failed
+        guard successfully else { return .failed }
+        // Only a reading that was playing and had reached its end has finished.
+        // Unplugging wired CarPlay mid-reading also arrives here as a finish.
+        if wasPlaying, position >= duration - endTolerance { return .ended }
+        return .paused(at: min(max(0, position), max(0, duration)))
     }
+
+    /// The plugin's playhead is a clock estimate, so it can trail the true end.
+    static let endTolerance: TimeInterval = 2
 }
