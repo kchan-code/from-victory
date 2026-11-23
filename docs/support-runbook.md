@@ -13,7 +13,7 @@ Anything marked `UNVERIFIED` could not be confirmed from the code or docs in thi
 - **Verify the sender before changing anything.** The request should come from the email on the account. If it comes from another address, ask them to write from the account email or confirm details only the account holder has (athlete first name, signup month). Never send a password. Never ask for one.
 - Never ask a parent to send card numbers or full receipts by email. An Apple or Google receipt screenshot is used only to confirm ownership and is not copied into any table or log (`docs/fv210-ios-iap-decision-record.md` section 4.7).
 - From Victory is not a mental health service. If a message describes a safety concern, do not treat it as a support ticket. `UNVERIFIED`: no written procedure for this exists in the repo (see Known gaps).
-- Do not promise a reply time or a refund. Both are undecided: `TODO(FV-768)`.
+- Do not promise a reply time or a refund. Decided by KC 2026-11-19 (FV-768): no public reply-time promise (internal target: two business days), and refunds are decided case by case.
 
 ## Where to look
 
@@ -151,7 +151,12 @@ The daily reconcile job does not cover Google Play. Before go-live, Terms sectio
 
 ## (d) Refund requests
 
-**Policy: `TODO(FV-768)`.** No refund policy has been decided. Do not promise a refund, a partial refund, or a time by which a refund request will be answered until FV-768 is resolved.
+**Policy (KC, 2026-11-19, FV-768).**
+
+- **Website (Stripe):** case by case. There is no stated refund window and no 14-day cutoff. This matches the Terms as written. KC decides each request.
+- **iPhone app (Apple):** send the customer to Apple, as Terms section 15 says. A goodwill comp is KC's call per case and is never promised in a template.
+- **Google Play (only once billing is on):** tell the customer they can ask Google through their Google Play account, and to write back if that does not resolve it. KC may refund from Play Console case by case. Never say Google refunds always go to Google; the routing is unverified.
+- Do not promise a refund, a partial refund, or a time by which a request will be answered.
 
 What the Terms currently say (section 15, `apps/web/app/terms/page.tsx`, approved by KC 2026-11-13, FV-723):
 
@@ -178,7 +183,7 @@ Website purchase:
 >
 > Thanks for writing. I have your refund request for the charge on [date].
 >
-> TODO(FV-768): refund decision wording goes here once the policy is set.
+> [KC writes the decision for this case here. If it is not decided yet: "I am looking at this and will write back with an answer."]
 >
 > Separately, if you want to stop future charges, you can cancel any time at fromvictoryapp.com under Settings, Manage subscription.
 >
@@ -446,7 +451,7 @@ Reports come from the parent or an adult athlete. Ask which device and app (iPho
 >
 > I received a notice from your bank about the From Victory charge on [date]. If something went wrong with your subscription I would like to fix it with you directly.
 >
-> TODO(FV-768): refund and dispute wording goes here once the policy is set.
+> [KC writes what he is offering for this case here. There is no fixed dispute wording; handling of refund and dispute events is still being scoped (FV-768).]
 >
 > KC, From Victory
 
@@ -470,7 +475,7 @@ A comp grant gives a parent full access with no card and no checkout. It is sepa
 ## Known gaps
 
 1. `support@fromvictoryapp.com` does not exist. Public pages give `privacy@fromvictoryapp.com` and the `/contact` form.
-2. Refund policy, dispute policy, and reply-time commitment are undecided: `TODO(FV-768)`. The Terms only say fees are non-refundable unless stated otherwise or required by law.
+2. Refunds are case by case and there is no public reply-time promise (KC, 2026-11-19, FV-768). Still open: Stripe receipt emails are off while the success page promises one (KC's action in Stripe); what the app should do on refund and dispute webhook events is not scoped.
 3. No self-serve email change (g), and no written manual procedure.
 4. No tool or tested procedure to re-link an Apple subscription to another account (b). The design record calls for one; the QA checklist names it as a KC-gated manual step without steps.
 5. The iPhone app shows the same generic error for `ownership_conflict` as for every other failure, after Apple has confirmed the purchase. The parent is not told to sign in to the other account (FV-706).
@@ -482,6 +487,7 @@ A comp grant gives a parent full access with no card and no checkout. It is sepa
 11. Google Play Billing is built and dormant. Before it is turned on: Terms section 15 needs Google wording, the daily reconcile job needs Google coverage, and section (c) needs a real walkthrough.
 12. Offline Pregame does not work in the released iPhone app (FV-753).
 13. The `/contact` form is not rate-limited and does not store messages; a failed notification email loses the message.
-14. `/delete-account` tells a minor athlete who cannot reach a parent to email us. That conflicts with "support is for adults only". KC to decide how such a message is handled.
-15. No written procedure for a support message that raises a safety concern.
-16. There is no way for KC to clear a sign-in rate limit; the customer waits it out.
+14. `/delete-account` tells a minor athlete who cannot reach a parent to email us. Decided (KC, 2026-11-19, FV-667): it stays, as a privacy-rights channel, and is the one exception to "support is for adults only". Any change to it goes through kids-privacy-officer.
+15. A message that appears to come from a 13-17 athlete (KC, 2026-11-19, FV-768): send one short reply asking that a parent or guardian contact us, then stop. The exception is a privacy-rights request under gap 14.
+16. A message that raises a safety concern (KC, 2026-11-19, FV-768): send a fixed reply saying we are not a mental health service, with the 988 Suicide & Crisis Lifeline and Crisis Text Line, using the same resource wording as the in-app screen. The reply text is not written yet and is to be reviewed by the clinical advisor once one is recruited.
+17. There is no way for KC to clear a sign-in rate limit; the customer waits it out.
