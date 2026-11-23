@@ -161,4 +161,23 @@ describe("Subscribe page FV-787 Apple history wiring", () => {
     expect(hasAnyAppleSubscriptionHistoryMock).not.toHaveBeenCalled();
     expect(screen.queryByTestId("apple-subscribe-section-stub")).not.toBeInTheDocument();
   });
+
+  it("falls back to first-time copy and logs when the history read fails", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    shellCapabilityMock.mockReturnValue("ios-iap");
+    entitlementStateMock.mockResolvedValue({ status: "not_entitled", provider: null });
+    hasAnyAppleSubscriptionHistoryMock.mockRejectedValue(new Error("read failed"));
+
+    await renderPage();
+
+    expect(screen.getByTestId("apple-subscribe-section-stub")).toHaveAttribute(
+      "data-prior-apple",
+      "false",
+    );
+    expect(errorSpy).toHaveBeenCalledWith(
+      "[subscribe] Apple subscription history read failed; defaulting to first-time copy.",
+      expect.any(Error),
+    );
+    errorSpy.mockRestore();
+  });
 });

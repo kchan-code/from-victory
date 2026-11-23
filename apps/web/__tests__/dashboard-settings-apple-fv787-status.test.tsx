@@ -42,6 +42,7 @@ const {
         readError: boolean;
         autoRenewStatus?: boolean | null;
         expiresAt?: string | null;
+        paymentLapsed?: boolean;
       },
   ),
 }));
@@ -102,6 +103,7 @@ import DashboardSettingsPage from "@/app/dashboard/settings/page";
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  vi.useRealTimers();
 });
 
 async function renderPage() {
@@ -115,6 +117,8 @@ async function renderPage() {
 
 describe("Dashboard Apple status copy FV-787", () => {
   it("shows 'Renews <date>' when Apple auto-renew is on", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-01T12:00:00.000Z"));
     getDisplayedAppleProductIdResultMock.mockResolvedValue({
       productId: "com.fromvictoryapp.app.plan1",
       readError: false,
@@ -130,17 +134,70 @@ describe("Dashboard Apple status copy FV-787", () => {
   });
 
   it("shows 'Cancelled, access ends <date>' when auto-renew is off and access is still active", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-01T12:00:00.000Z"));
     getDisplayedAppleProductIdResultMock.mockResolvedValue({
       productId: "com.fromvictoryapp.app.plan1",
       readError: false,
       autoRenewStatus: false,
-      expiresAt: "2099-12-12T00:00:00.000Z",
+      expiresAt: "2026-12-12T00:00:00.000Z",
     });
 
     await renderPage();
 
     expect(screen.getByTestId("subscription-status")).toHaveTextContent(
-      "Cancelled, access ends December 12, 2099",
+      "Canceled, access ends December 12, 2026",
     );
+  });
+
+  it("shows 'Active' for grace-period access with auto-renew on when expires_at is in the past", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-01T12:00:00.000Z"));
+    getDisplayedAppleProductIdResultMock.mockResolvedValue({
+      productId: "com.fromvictoryapp.app.plan1",
+      readError: false,
+      autoRenewStatus: true,
+      expiresAt: "2026-09-28T00:00:00.000Z",
+      paymentLapsed: false,
+    });
+
+    await renderPage();
+
+    expect(screen.getByTestId("subscription-status")).toHaveTextContent("Active");
+    expect(screen.getByTestId("subscription-status")).not.toHaveTextContent("Renews");
+  });
+
+  it("shows 'Active' for billing-retry state even with auto-renew on", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-01T12:00:00.000Z"));
+    getDisplayedAppleProductIdResultMock.mockResolvedValue({
+      productId: "com.fromvictoryapp.app.plan1",
+      readError: false,
+      autoRenewStatus: true,
+      expiresAt: "2026-12-12T00:00:00.000Z",
+      paymentLapsed: true,
+    });
+
+    await renderPage();
+
+    expect(screen.getByTestId("subscription-status")).toHaveTextContent("Active");
+    expect(screen.getByTestId("subscription-status")).not.toHaveTextContent("Renews");
+  });
+
+  it("falls back to 'Active' when expiry is invalid or missing", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-01T12:00:00.000Z"));
+    getDisplayedAppleProductIdResultMock.mockResolvedValue({
+      productId: "com.fromvictoryapp.app.plan1",
+      readError: false,
+      autoRenewStatus: true,
+      expiresAt: "not-a-date",
+      paymentLapsed: false,
+    });
+
+    await renderPage();
+
+    expect(screen.getByTestId("subscription-status")).toHaveTextContent("Active");
+    expect(screen.getByTestId("subscription-status")).not.toHaveTextContent("Renews");
   });
 });

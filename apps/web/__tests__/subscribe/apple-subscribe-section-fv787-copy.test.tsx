@@ -84,10 +84,10 @@ describe("AppleSubscribeSection FV-787 copy", () => {
     await renderPurchaseSection(true);
 
     expect(screen.getByTestId("apple-purchase-note")).toHaveTextContent(
-      "Your free trial has been used. Subscribing starts a paid plan today.",
-    );
-    expect(screen.getByTestId("apple-purchase-note")).not.toHaveTextContent(
       "Apple shows the final price and terms before you confirm.",
+    );
+    expect(screen.getByTestId("apple-trial-used-note")).toHaveTextContent(
+      "Your free trial has been used. Subscribing starts a paid plan today.",
     );
   });
 });

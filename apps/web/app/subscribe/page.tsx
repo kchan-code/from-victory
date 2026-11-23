@@ -188,7 +188,11 @@ export default async function SubscribePage(props: Props) {
         createServiceClient(),
         userId,
       );
-    } catch {
+    } catch (error) {
+      console.error(
+        "[subscribe] Apple subscription history read failed; defaulting to first-time copy.",
+        error,
+      );
       // Fail open for copy only: if this read fails, keep first-time wording.
       hasPriorAppleSubscription = false;
     }

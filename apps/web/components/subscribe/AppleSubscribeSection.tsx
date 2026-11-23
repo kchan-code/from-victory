@@ -110,9 +110,8 @@ const YOUR_PLAN_LABEL = "Your plan";
 const ATHLETES_GROUP_LABEL = "Athletes";
 const INTERVAL_GROUP_LABEL = "Billing interval";
 const CHANGE_PLAN_LABEL = "Change plan";
-// Neutral, non-promissory line for first-purchase mode only — Apple's own
-// sheet is the sole source of trial/price/terms claims (no trial/eligibility
-// copy is ever rendered by this component itself).
+// Neutral, non-promissory terms line for first-purchase mode — Apple's own
+// sheet is still the source of final trial/price/terms claims.
 const APPLE_TERMS_NOTE = "Apple shows the final price and terms before you confirm.";
 // FV-720 (App Review 3.1.2): one static line on the purchase paywall. Price
 // and period stay StoreKit's. No web trial terms and no hardcoded price.
@@ -1194,10 +1193,16 @@ export function AppleSubscribeSection({
         data-testid="apple-purchase-note"
         className="mb-4 font-body text-cream/55 text-[13px] leading-relaxed"
       >
-        {hasPriorAppleSubscription
-          ? "Your free trial has been used. Subscribing starts a paid plan today."
-          : APPLE_TERMS_NOTE}
+        {APPLE_TERMS_NOTE}
       </p>
+      {hasPriorAppleSubscription ? (
+        <p
+          data-testid="apple-trial-used-note"
+          className="mb-4 font-body text-cream/55 text-[13px] leading-relaxed"
+        >
+          Your free trial has been used. Subscribing starts a paid plan today.
+        </p>
+      ) : null}
 
       <p
         data-testid="apple-renewal-note"

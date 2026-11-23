@@ -616,12 +616,9 @@ export async function getActiveAppleProductId(
 export const getDisplayedAppleProductIdResult = getActiveAppleProductIdResult;
 
 /**
- * Returns true when the payer has ever had an Apple subscription row in any
- * state. Used for payer-facing copy only (first-time vs returning wording).
- *
- * Unlike `hasEverHeldAppleEntitlement`, this intentionally checks for ANY
- * row (no environment filter) because copy only needs to know whether the
- * payer has prior Apple subscription history.
+ * Returns true when the payer has ever had a Production Apple subscription
+ * row in any state. Used for payer-facing copy only (first-time vs returning
+ * wording) and intentionally matches the Production-only trial-history policy.
  */
 export async function hasAnyAppleSubscriptionHistory(
   service: ServiceClient,
@@ -630,7 +627,8 @@ export async function hasAnyAppleSubscriptionHistory(
   const { count, error } = await service
     .from("apple_subscriptions")
     .select("id", { count: "exact", head: true })
-    .eq("payer_id", payerId);
+    .eq("payer_id", payerId)
+    .eq("environment", "Production");
 
   if (error) {
     throw new Error(
