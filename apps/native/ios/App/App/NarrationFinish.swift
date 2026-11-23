@@ -15,16 +15,17 @@ enum NarrationFinish {
 
     /// - Parameters:
     ///   - successfully: the delegate's flag.
-    ///   - wasPlaying: whether the plugin still believed it was playing.
     ///   - position: the plugin's own playhead when the report arrived, in seconds.
     ///   - duration: the reading's length, in seconds.
-    static func classify(successfully: Bool, wasPlaying: Bool,
-                         position: TimeInterval, duration: TimeInterval) -> Outcome {
+    static func classify(successfully: Bool, position: TimeInterval, duration: TimeInterval) -> Outcome {
         guard successfully else { return .failed }
-        // Only a reading that was playing and had reached its end has finished.
-        // Unplugging wired CarPlay mid-reading also arrives here as a finish.
-        if wasPlaying, position >= duration - endTolerance { return .ended }
-        return .paused(at: min(max(0, position), max(0, duration)))
+        // Only a reading whose playhead reached the end has finished. Unplugging
+        // wired CarPlay mid-reading also arrives here as a finish.
+        // Decide on position alone: at a real end a status poll can mark the
+        // stopped player paused just before this report lands, and that must
+        // still complete the session.
+        if position >= duration - endTolerance { return .ended }
+        return .paused(at: max(0, position))
     }
 
     /// The plugin's playhead is a clock estimate, so it can trail the true end.

@@ -292,8 +292,8 @@ public class FVNarrationPlugin: CAPPlugin, CAPBridgedPlugin, AVAudioPlayerDelega
     public func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
         DispatchQueue.main.async {
             guard player === self.player, self.state != "ended" else { return }
-            let outcome = NarrationFinish.classify(successfully: flag, wasPlaying: self.state == "playing",
-                                                   position: self.playhead, duration: player.duration)
+            let outcome = NarrationFinish.classify(successfully: flag, position: self.playhead,
+                                                   duration: player.duration)
             if case .paused(let position) = outcome {
                 // Not the end: the system stopped the player early (wired CarPlay
                 // unplugged). Hold the spot so the athlete's Play tap resumes there.

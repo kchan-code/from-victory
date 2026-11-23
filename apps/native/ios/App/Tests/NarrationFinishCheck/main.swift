@@ -22,38 +22,42 @@ func expect(_ name: String, _ actual: NarrationFinish.Outcome, _ expected: Narra
 
 let fiveMinutes: TimeInterval = 300
 
+func classify(_ successfully: Bool, at position: TimeInterval,
+              of duration: TimeInterval = fiveMinutes) -> NarrationFinish.Outcome {
+    NarrationFinish.classify(successfully: successfully, position: position, duration: duration)
+}
+
 // The bug: unplugging wired CarPlay 40 seconds into a five-minute reading makes
 // AVAudioPlayer report a successful finish. That is a pause, not the end.
-expect("finish reported mid-reading while playing holds the spot",
-       NarrationFinish.classify(successfully: true, wasPlaying: true, position: 40, duration: fiveMinutes),
-       .paused(at: 40))
+expect("finish reported mid-reading holds the spot", classify(true, at: 40), .paused(at: 40))
 
-// The route-loss handler can pause first and the finish report can land after.
-expect("finish reported after the plugin already paused holds the spot",
-       NarrationFinish.classify(successfully: true, wasPlaying: false, position: 40, duration: fiveMinutes),
-       .paused(at: 40))
+expect("finish reported at the very start holds the spot", classify(true, at: 0), .paused(at: 0))
 
-// A paused reading cannot finish on its own, however close to the end it is.
-expect("finish reported while paused near the end still holds the spot",
-       NarrationFinish.classify(successfully: true, wasPlaying: false, position: 299.5, duration: fiveMinutes),
-       .paused(at: 299.5))
+expect("a held spot is never before the start", classify(true, at: -3), .paused(at: 0))
 
-expect("finish reported at the end while playing completes the session",
-       NarrationFinish.classify(successfully: true, wasPlaying: true, position: fiveMinutes, duration: fiveMinutes),
-       .ended)
+expect("finish reported just outside the end tolerance holds the spot",
+       classify(true, at: 297.9), .paused(at: 297.9))
+
+expect("finish reported at the end completes the session", classify(true, at: fiveMinutes), .ended)
 
 // The plugin's playhead is a clock estimate, so allow it to trail the true end.
-expect("finish reported just short of the end while playing completes the session",
-       NarrationFinish.classify(successfully: true, wasPlaying: true, position: 298.7, duration: fiveMinutes),
-       .ended)
+expect("finish reported just short of the end completes the session", classify(true, at: 298.7), .ended)
 
-expect("a held spot is never before the start",
-       NarrationFinish.classify(successfully: true, wasPlaying: true, position: -3, duration: fiveMinutes),
-       .paused(at: 0))
+expect("finish reported exactly at the tolerance completes the session", classify(true, at: 298), .ended)
 
-expect("an unsuccessful finish is still a failure",
-       NarrationFinish.classify(successfully: false, wasPlaying: true, position: 40, duration: fiveMinutes),
-       .failed)
+expect("a playhead past the end completes the session", classify(true, at: 301), .ended)
+
+// At a real end, a status poll can mark the stopped player paused a moment
+// before the finish report lands. The playhead is at the end either way, so
+// the session must still complete. The rule takes no "was playing" input.
+expect("a real end completes even if the plugin had already marked it paused",
+       classify(true, at: 299.5), .ended)
+
+expect("a reading shorter than the tolerance completes", classify(true, at: 0, of: 1.5), .ended)
+
+expect("an unsuccessful finish is still a failure", classify(false, at: 40), .failed)
+
+expect("an unsuccessful finish at the end is still a failure", classify(false, at: fiveMinutes), .failed)
 
 if failures > 0 {
     print("\(failures) case(s) failed")
