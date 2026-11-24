@@ -56,8 +56,9 @@ when FV-600 lands (recorded on FV-600).
   (memory: "CI auto-applies migrations"); confirm with the RLS harness green on the merged head.
 - Production env (Vercel, names only): `APPLE_BUNDLE_ID=com.fromvictoryapp.app`, `APPLE_APP_APPLE_ID=6804743047`,
   `APPLE_ROOT_CA_BASE64` (FV-603 #547; SET in production from the G3+G2 public DER files), `NEXT_PUBLIC_APPLE_PRODUCTS` = FV-593 `catalogToPublicProductsJson()` output (10 products; SET in production), `APPLE_CATALOG_ACTIVE=1` (activation = Tier-2; run the FV-597 gate in `docs/apple-catalog-activation-runbook.md` first — read-only check must return 0 rows; the prepared allowlist SQL there is review-only until then),
-  `APPLE_IAP_KEY_ID/ISSUER_ID/SIGNING_KEY_PATH` only if the App Store Server API reconcile path is enabled (not needed
-  for purchase/webhook).
+  `APPLE_IAP_KEY_ID/ISSUER_ID/SIGNING_KEY_BASE64` for the App Store Server API reconcile path (not needed
+  for purchase/webhook). That path is live: the daily reconcile cron (FV-709) fails every Apple row until these are
+  set (FV-788). On Vercel use `SIGNING_KEY_BASE64` (base64 of the `.p8`); `SIGNING_KEY_PATH` is beta/local only.
 - App Store Server Notifications: set the **Production** Server URL in ASC to `https://www.fromvictoryapp.com/api/webhooks/apple`
   (V2). Keep the Sandbox URL pointing at the beta tunnel only while the beta runs; afterwards point Sandbox at production
   too (Apple sends sandbox notifications for App Review purchases).

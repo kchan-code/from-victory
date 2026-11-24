@@ -65,10 +65,20 @@ Env vars consumed by `apps/web/lib/subscriptions/apple-server.ts` (all read lazi
 | `APPLE_BUNDLE_ID` | `com.fromvictoryapp.app` (verify against Xcode project) |
 | `APPLE_APP_APPLE_ID` | Numeric App ID from ASC (production verifier only) |
 | `APPLE_ROOT_CA_PATHS` | Comma-separated DER cert paths (§2) — decide delivery: bundled-at-build vs mounted secret; FV-573 owns the choice |
-| `APPLE_IAP_SIGNING_KEY_PATH` | `.p8` path (§2) — secret-manager delivery preferred over filesystem; swap is isolated to one function |
+| `APPLE_IAP_SIGNING_KEY_BASE64` | **Production (Vercel).** Base64 of the whole `.p8` file (§2). Wins over the path variable when set (FV-788) |
+| `APPLE_IAP_SIGNING_KEY_PATH` | `.p8` path (§2). Beta/local dev only: Vercel functions have no key file on disk |
 | `APPLE_IAP_KEY_ID` / `APPLE_IAP_ISSUER_ID` | From §2 |
 | `NEXT_PUBLIC_APPLE_PRODUCTS` | JSON product config (P2) — EMPTY until P2; empty = UI shows not-available state |
 
+The three `APPLE_IAP_*` values are used only by the daily reconcile cron
+(`/api/cron/reconcile-subscriptions`, FV-709). Purchases and the notifications
+webhook work without them, but until they are set every Apple row in the cron
+fails and it alerts `apple failed=N` each night (FV-788).
+
+- [ ] Set the reconcile credentials in Vercel **production** (KC; FV-788):
+  1. Encode the key: `base64 -i AuthKey_<KEYID>.p8 | pbcopy` (never commit or paste the `.p8` anywhere else).
+  2. Add `APPLE_IAP_SIGNING_KEY_BASE64` (paste), `APPLE_IAP_KEY_ID`, `APPLE_IAP_ISSUER_ID` as Sensitive, Production only. Redeploy.
+  3. Trigger the cron once and confirm the response shows `apple.failed: 0`.
 - [ ] `apple_sandbox_testers` allowlist ops: KC-gated service-role INSERT for (a) internal QA payer(s), (b) the App Review demo account's payer. Removal equally KC-gated. No client path exists (RLS zero-grant, proven by harness file 20).
 - [ ] Apple migration applies via the normal CI db-migrate flow when PR #511 merges — precondition satisfied: `20_apple_subscriptions.sql` landed in the same branch and has an executed `[PASS]` (PRs #514/#516).
 
