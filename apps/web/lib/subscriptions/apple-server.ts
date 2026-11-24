@@ -69,6 +69,19 @@
  * This module only reads whatever is configured — it does not fetch, embed,
  * or rotate certificates itself. CA acquisition and rotation is FV-573's
  * runbook item.
+ *
+ * App Store Server API signing-key loading (FV-788): same two-source shape,
+ * same precedence —
+ *
+ *   1. `APPLE_IAP_SIGNING_KEY_BASE64` — the base64 of the whole `.p8` file,
+ *      decoded in-process. This is what PRODUCTION uses, for the same reason
+ *      as the root certificates: there is no key file on disk on Vercel.
+ *   2. `APPLE_IAP_SIGNING_KEY_PATH` — an absolute path to the `.p8` file.
+ *      BETA/LOCAL DEV only.
+ *
+ * The key is used only by the reconciliation client (Get All Subscription
+ * Statuses). Purchase verification and the Notifications V2 webhook never
+ * need it. Key material is never logged or put in an error message.
  */
 import "server-only";
 
@@ -487,9 +500,34 @@ export async function verifyAndDecodeNotification(
 let productionApiClient: AppStoreServerAPIClient | null = null;
 let sandboxApiClient: AppStoreServerAPIClient | null = null;
 
+/**
+ * Loads the App Store Server API signing key (the `.p8` file's PEM text).
+ * See the file header for the two sources and their precedence. Errors name
+ * the env var and describe the problem only — never any part of the value.
+ */
+function loadSigningKey(): string {
+  const base64Raw = process.env.APPLE_IAP_SIGNING_KEY_BASE64;
+  if (base64Raw !== undefined && base64Raw.trim().length > 0) {
+    // `base64` on Linux wraps its output at 76 columns; accept that.
+    const entry = base64Raw.replace(/\s+/g, "");
+    if (!/^[A-Za-z0-9+/]+={0,2}$/.test(entry)) {
+      throw new Error(
+        "[subscriptions/apple-server] APPLE_IAP_SIGNING_KEY_BASE64 is not valid base64.",
+      );
+    }
+    const decoded = Buffer.from(entry, "base64").toString("utf8");
+    if (!/-----BEGIN [A-Z ]*PRIVATE KEY-----/.test(decoded)) {
+      throw new Error(
+        "[subscriptions/apple-server] APPLE_IAP_SIGNING_KEY_BASE64 did not decode to a PEM private key. Encode the whole .p8 file.",
+      );
+    }
+    return decoded;
+  }
+  return readFileSync(requiredEnv("APPLE_IAP_SIGNING_KEY_PATH"), "utf8");
+}
+
 function buildApiClient(environment: Environment): AppStoreServerAPIClient {
-  const signingKeyPath = requiredEnv("APPLE_IAP_SIGNING_KEY_PATH");
-  const signingKey = readFileSync(signingKeyPath, "utf8");
+  const signingKey = loadSigningKey();
   const keyId = requiredEnv("APPLE_IAP_KEY_ID");
   const issuerId = requiredEnv("APPLE_IAP_ISSUER_ID");
   const bundleId = requiredEnv("APPLE_BUNDLE_ID");
