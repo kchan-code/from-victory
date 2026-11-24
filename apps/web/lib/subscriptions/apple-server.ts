@@ -85,6 +85,7 @@
  */
 import "server-only";
 
+import { createPrivateKey } from "node:crypto";
 import { readFileSync } from "node:fs";
 
 import {
@@ -508,6 +509,11 @@ let sandboxApiClient: AppStoreServerAPIClient | null = null;
 function loadSigningKey(): string {
   const base64Raw = process.env.APPLE_IAP_SIGNING_KEY_BASE64;
   if (base64Raw !== undefined && base64Raw.trim().length > 0) {
+    if (base64Raw.trim().startsWith("-----BEGIN")) {
+      throw new Error(
+        "[subscriptions/apple-server] APPLE_IAP_SIGNING_KEY_BASE64 holds the raw key text. Base64-encode the whole .p8 file first.",
+      );
+    }
     // `base64` on Linux wraps its output at 76 columns; accept that.
     const entry = base64Raw.replace(/\s+/g, "");
     if (!/^[A-Za-z0-9+/]+={0,2}$/.test(entry)) {
@@ -516,9 +522,19 @@ function loadSigningKey(): string {
       );
     }
     const decoded = Buffer.from(entry, "base64").toString("utf8");
-    if (!/-----BEGIN [A-Z ]*PRIVATE KEY-----/.test(decoded)) {
+    // Parse it now so a truncated or wrong paste fails here, naming the
+    // variable, and not later as an opaque per-row failure at Apple. The
+    // parser's own error is dropped on purpose: only the fixed text below
+    // is ever thrown. Apple's keys are EC (ES256).
+    let usable = false;
+    try {
+      usable = createPrivateKey(decoded).asymmetricKeyType === "ec";
+    } catch {
+      usable = false;
+    }
+    if (!usable) {
       throw new Error(
-        "[subscriptions/apple-server] APPLE_IAP_SIGNING_KEY_BASE64 did not decode to a PEM private key. Encode the whole .p8 file.",
+        "[subscriptions/apple-server] APPLE_IAP_SIGNING_KEY_BASE64 did not decode to a usable EC private key. Encode the whole .p8 file.",
       );
     }
     return decoded;

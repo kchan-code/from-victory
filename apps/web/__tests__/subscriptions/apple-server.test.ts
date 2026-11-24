@@ -111,6 +111,7 @@ import {
   describeVerificationFailure,
 } from "@/lib/subscriptions/apple-server";
 import { readFileSync } from "node:fs";
+import { generateKeyPairSync } from "node:crypto";
 
 const TRANSACTION_JWS = "ey.fake.transaction";
 const RENEWAL_JWS = "ey.fake.renewal";
@@ -593,9 +594,14 @@ describe("getAllSubscriptionStatuses", () => {
 // ---------------------------------------------------------------------------
 
 describe("loadSigningKey — APPLE_IAP_SIGNING_KEY_BASE64", () => {
-  // Not a real key: only the PEM armor matters to the code under test.
-  const FAKE_P8 =
-    "-----BEGIN PRIVATE KEY-----\nZmFrZS1rZXktYm9keQ==\n-----END PRIVATE KEY-----\n";
+  // A throwaway P-256 PKCS#8 key generated per run (same format as Apple's
+  // .p8). The code under test parses the key, so the armor alone is not
+  // enough. node:crypto is not mocked in this file.
+  const FAKE_P8 = generateKeyPairSync("ec", {
+    namedCurve: "P-256",
+    privateKeyEncoding: { type: "pkcs8", format: "pem" },
+    publicKeyEncoding: { type: "spki", format: "pem" },
+  }).privateKey;
 
   beforeEach(() => {
     vi.resetModules();
@@ -649,7 +655,7 @@ describe("loadSigningKey — APPLE_IAP_SIGNING_KEY_BASE64", () => {
     expect(apiClientCtorMock).not.toHaveBeenCalled();
   });
 
-  it("rejects base64 that does not decode to a PEM private key, without echoing the decoded text", async () => {
+  it("rejects base64 that does not decode to a private key, without echoing the decoded text", async () => {
     process.env.APPLE_IAP_SIGNING_KEY_BASE64 = Buffer.from("some-other-secret-text").toString("base64");
 
     const fresh = await import("@/lib/subscriptions/apple-server");
@@ -657,8 +663,52 @@ describe("loadSigningKey — APPLE_IAP_SIGNING_KEY_BASE64", () => {
       .getAllSubscriptionStatuses("otid_1", "Production")
       .then(() => null, (e: unknown) => e as Error);
 
-    expect(err?.message).toMatch(/APPLE_IAP_SIGNING_KEY_BASE64 did not decode to a PEM private key/);
+    expect(err?.message).toMatch(/APPLE_IAP_SIGNING_KEY_BASE64 did not decode to a usable EC private key/);
     expect(err?.message).not.toContain("some-other-secret-text");
+    expect(apiClientCtorMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects a truncated key (armor intact, body cut short) without echoing any of it", async () => {
+    const lines = FAKE_P8.trim().split("\n");
+    const body = lines.slice(1, -1).join("");
+    const truncated = `${lines[0]}\n${body.slice(0, 24)}\n${lines[lines.length - 1]}\n`;
+    process.env.APPLE_IAP_SIGNING_KEY_BASE64 = Buffer.from(truncated).toString("base64");
+
+    const fresh = await import("@/lib/subscriptions/apple-server");
+    const err = await fresh
+      .getAllSubscriptionStatuses("otid_1", "Production")
+      .then(() => null, (e: unknown) => e as Error);
+
+    expect(err?.message).toMatch(/APPLE_IAP_SIGNING_KEY_BASE64 did not decode to a usable EC private key/);
+    expect(err?.message).not.toContain(body.slice(0, 24));
+    expect(apiClientCtorMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects a key of the wrong type (RSA) with the same fixed message", async () => {
+    const rsa = generateKeyPairSync("rsa", {
+      modulusLength: 2048,
+      privateKeyEncoding: { type: "pkcs8", format: "pem" },
+      publicKeyEncoding: { type: "spki", format: "pem" },
+    }).privateKey;
+    process.env.APPLE_IAP_SIGNING_KEY_BASE64 = Buffer.from(rsa).toString("base64");
+
+    const fresh = await import("@/lib/subscriptions/apple-server");
+    await expect(fresh.getAllSubscriptionStatuses("otid_1", "Production")).rejects.toThrow(
+      /APPLE_IAP_SIGNING_KEY_BASE64 did not decode to a usable EC private key/,
+    );
+    expect(apiClientCtorMock).not.toHaveBeenCalled();
+  });
+
+  it("tells the operator to encode first when the raw key text was pasted, without echoing it", async () => {
+    process.env.APPLE_IAP_SIGNING_KEY_BASE64 = FAKE_P8;
+
+    const fresh = await import("@/lib/subscriptions/apple-server");
+    const err = await fresh
+      .getAllSubscriptionStatuses("otid_1", "Production")
+      .then(() => null, (e: unknown) => e as Error);
+
+    expect(err?.message).toMatch(/APPLE_IAP_SIGNING_KEY_BASE64 holds the raw key text/);
+    expect(err?.message).not.toContain(FAKE_P8.trim().split("\n")[1]);
     expect(apiClientCtorMock).not.toHaveBeenCalled();
   });
 
