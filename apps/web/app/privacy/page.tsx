@@ -24,8 +24,20 @@ import Link from "next/link";
 //     events without changing 1i first.
 //   - 1j says an error report carries no account identifier. See
 //     lib/monitoring/client-error-report.ts.
-//   - Google Play Billing is NOT described because it is not live. Add it to
-//     1e, 7 and 8 (and Terms section 15) before Play purchases are turned on.
+//   - Google Play Billing (FV-667): 1e, 7 and 8 (and Terms section 15)
+//     describe Google Play purchases. DRAFT wording, not attorney-approved;
+//     it must be reviewed and published together with turning Play purchases
+//     on (GOOGLE_PLAY_CATALOG_ACTIVE), not before and not after. Keep in step
+//     with the code:
+//       * 1e lists what is stored from Google. It mirrors the columns of
+//         `google_subscriptions` (supabase migration 20261111120000) and the
+//         binding id in `google_purchase_bindings`. No Google order number is
+//         stored in the database. Adding a column means changing 1e first.
+//       * 8 says deleting an account asks Google to stop renewal and tells the
+//         user when that could not be confirmed (lib/actions/account.ts step
+//         1e, AccountDeletionNotice). It also discloses that the failure
+//         alert can carry the Google order number. If the alert contents or
+//         the cancel step change, 8 and Terms 15 must change first.
 //   - Sign in with Apple / Google is NOT described because the sign-in entry
 //     points are not live. Add the identifiers before they are.
 // Every factual claim here is grounded in the verified data inventory
@@ -246,6 +258,25 @@ export default function PrivacyPage() {
           sends us notices when a subscription renews, is cancelled, expires, or is refunded,
           so that access in the app stays accurate. Apple&apos;s handling of your purchase and
           payment information is governed by Apple&apos;s own privacy policy.
+        </p>
+        <p className="mt-3">
+          <strong>In the Android app.</strong> Subscriptions bought in our Android app are
+          sold and billed by Google through your Google Play account, as an in-app purchase.
+          Google does <strong>not</strong> share your payment card details with us. From
+          Google we store only what is needed to recognize and manage the subscription: a Google Play purchase token for the subscription (and, if the
+          purchase replaced an earlier one, the earlier purchase&apos;s token), which plan
+          and offer were purchased, the subscription status, its renewal or expiration date,
+          whether automatic renewal is on, whether the purchase has been acknowledged to
+          Google, whether Google marked it as a test purchase, and when we last confirmed the
+          subscription with Google. Google&apos;s answers to us can contain more than we
+          keep, for example an order number. We do not store an order number in our
+          database. We also store an
+          identifier we generate ourselves to connect the purchase to your From Victory
+          account; we give that identifier to Google Play when you start a purchase, and
+          Google returns it to us with the purchase. Google sends us notices when a
+          subscription renews, is cancelled, expires, or is refunded, so that access in the
+          app stays accurate. Google&apos;s handling of your purchase and payment information
+          is governed by Google&apos;s own privacy policy.
         </p>
         <p className="mt-3">
           A subscription is always bought by the account holder (a parent or guardian, or an
@@ -524,6 +555,11 @@ export default function PrivacyPage() {
             Apple, if you subscribe in our iOS app: Apple processes the purchase and tells us
             the status of the subscription, and we confirm the subscription with Apple
           </li>
+          <li>
+            Google, if you subscribe in our Android app: Google processes the purchase and
+            tells us the status of the subscription, and we confirm the subscription with
+            Google
+          </li>
           <li>A web-hosting and serverless-infrastructure provider</li>
           <li>An email delivery provider</li>
           <li>
@@ -587,6 +623,42 @@ export default function PrivacyPage() {
           subscribed in our iOS app, cancel the subscription in your Apple Account settings
           before or after deleting your account, or Apple will continue to bill you. Apple
           keeps its own records of your purchases under its own policies.
+        </p>
+        <p className="mt-3">
+          If you subscribed in our Android app, deleting your account deletes the Google Play
+          purchase information we hold for it, and we ask Google to stop any Google Play
+          subscription we have on record for the account from renewing. This does{" "}
+          <strong>not</strong> refund a payment already made.
+        </p>
+        <p className="mt-3">
+          If we cannot confirm that Google stopped the renewal, a message on the screen tells
+          you so when the deletion finishes. In that case, cancel the subscription in the
+          Subscriptions section of Google Play, or Google will continue to bill you.
+        </p>
+        <p className="mt-3">
+          When that happens we also send ourselves an alert by email, through our email
+          provider, so that we can follow up. If Google refused or did not answer the
+          request, the alert contains, for each subscription: the name of our Android app,
+          the plan, the Google order number of the most recent payment if we could read it,
+          the subscription&apos;s status and end date as we last recorded them, and a short
+          one-way code made from part of the Google purchase token. It does not contain your
+          name, your email address, or your From Victory account identifier. Because it
+          contains a Google order number, it is the one record connected to your purchase
+          that remains with us after your account is deleted. If instead we could not read
+          our own records of your purchase, the alert says only that, and contains none of
+          those details.
+        </p>
+        {/* FV-667 MERGE PRECONDITION: the next paragraph is true only once a
+            mailbox rule or dated sweep deletes each alert within 30 days and
+            the alert mailbox is confirmed to be the owner's alone (KC decision
+            2026-11-19). Do not publish it before that exists. */}
+        <p className="mt-3">
+          Only the owner of From Victory can read these alerts, and we delete each one within
+          30 days of receiving it. Our email provider may keep its own delivery records under
+          its own policies.
+        </p>
+        <p className="mt-3">
+          Google keeps its own records of your purchases under its own policies.
         </p>
         <p className="mt-3">
           For step-by-step deletion instructions — including the path for a minor athlete — see
