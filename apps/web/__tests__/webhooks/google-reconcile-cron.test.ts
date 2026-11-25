@@ -202,3 +202,38 @@ describe("flag on", () => {
     expect(notifyError).not.toHaveBeenCalled();
   });
 });
+
+// FV-669: pilot flag only. The fake database returns an EMPTY allowlist
+// (every table but google_subscriptions is empty), so nothing is in scope.
+describe("pilot flag only (FV-669)", () => {
+  const ORIG_PILOT = process.env.GOOGLE_PLAY_PILOT_ACTIVE;
+  beforeEach(() => {
+    delete process.env.GOOGLE_PLAY_CATALOG_ACTIVE;
+    process.env.GOOGLE_PLAY_PILOT_ACTIVE = "1";
+  });
+  afterEach(() => {
+    if (ORIG_PILOT === undefined) delete process.env.GOOGLE_PLAY_PILOT_ACTIVE;
+    else process.env.GOOGLE_PLAY_PILOT_ACTIVE = ORIG_PILOT;
+  });
+
+  it("with no allowlisted payer: the Google pass runs but processes nothing, and nothing alerts", async () => {
+    googleRows = [gRow()];
+    stallRows = [gRow({ expires_at: "2000-01-01T00:00:00.000Z" })];
+
+    const body = await (await GET(makeReq())).json();
+
+    expect(body.google).toMatchObject({ checked: 0, corrected: 0, failed: 0 });
+    expect(body.googleStalled).toBe(0);
+    expect(processMock).not.toHaveBeenCalled();
+    expect(notifyError).not.toHaveBeenCalled();
+  });
+
+  it("pilot flag not exactly \"1\": inert, same shape as today", async () => {
+    process.env.GOOGLE_PLAY_PILOT_ACTIVE = "true";
+    googleRows = [gRow()];
+    const body = await (await GET(makeReq())).json();
+    expect(Object.keys(body).sort()).toEqual(["apple", "stripe"]);
+    expect(googleFromCalls).toBe(0);
+    expect(processMock).not.toHaveBeenCalled();
+  });
+});

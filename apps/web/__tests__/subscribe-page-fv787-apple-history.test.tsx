@@ -57,6 +57,7 @@ vi.mock("@/lib/subscriptions/google", () => ({
 vi.mock("@/lib/subscriptions/google-product-catalog", () => ({
   GOOGLE_PLAY_CATALOG: [],
   isGooglePlayCatalogActive: () => false,
+  isGooglePlayPilotActive: () => false,
 }));
 
 vi.mock("@/lib/supabase/server", () => ({

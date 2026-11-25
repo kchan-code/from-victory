@@ -5,11 +5,12 @@ import { getRequestShellCapability } from "@/lib/native-shell";
 import { isRestrictedShell } from "@/lib/native-shell-restricted";
 import {
   GOOGLE_PLAY_CATALOG,
-  isGooglePlayCatalogActive,
 } from "@/lib/subscriptions/google-product-catalog";
 import { getSubscribeEntitlementState } from "@/lib/subscriptions/subscribe-guard";
 import { getGoogleEntitlementSnapshotForPayer } from "@/lib/subscriptions/google";
 import { googleSubscriptionAccessLevel } from "@/lib/subscriptions/google-access-level";
+import { isGooglePlayActiveForPayer } from "@/lib/subscriptions/google-play-pilot";
+import { isGooglePlayCatalogActive } from "@/lib/subscriptions/google-product-catalog";
 import { createServiceClient } from "@/lib/supabase/service";
 import {
   capacityForAppleProduct,
@@ -62,7 +63,8 @@ export default async function NewAthletePage() {
   // trial-quote (Stripe) read entirely. ios-iap and web are unchanged.
   const shellCapability = await getRequestShellCapability();
   const androidPlayCatalogEnabled =
-    shellCapability === "android-play" && isGooglePlayCatalogActive();
+    shellCapability === "android-play" &&
+    (await isGooglePlayActiveForPayer(createServiceClient(), parentId));
   let androidPlayPurchaseEligible = false;
   if (androidPlayCatalogEnabled) {
     const entitlement = await getSubscribeEntitlementState(parentId);
@@ -173,7 +175,9 @@ export default async function NewAthletePage() {
         "product_id, base_plan_id, offer_id, status, acknowledged, expires_at, created_at",
       )
       .eq("payer_id", parentId)
-      .eq("is_test_purchase", false);
+      // FV-669: pilot mode (public flag off) shows TEST rows only; public mode
+      // shows real rows only, as before.
+      .eq("is_test_purchase", !isGooglePlayCatalogActive());
     const sorted =
       snapshot.activeProductId === null
         ? []

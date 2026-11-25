@@ -2,7 +2,10 @@
  * Server actions: Google Play purchase binding and submission (FV-661,
  * Play Billing C3). DORMANT: every action refuses, before touching Google or
  * the database, unless `GOOGLE_PLAY_CATALOG_ACTIVE` is exactly "1"
- * (record 6.1, the server-flag lock).
+ * (record 6.1, the server-flag lock). FV-669 pilot: with only
+ * `GOOGLE_PLAY_PILOT_ACTIVE` = "1", the actions run for a session-resolved
+ * payer on `google_license_testers` and admit only Google-verified TEST
+ * purchases (a real purchase is refused: not written, not acknowledged).
  *
  * Contract (docs/fv651-android-play-billing-decision-record.md 7.1 to 7.4):
  *   1. The payer is resolved from the session. The client supplies only the
@@ -42,7 +45,11 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { googleSubscriptionAccessLevel } from "@/lib/subscriptions/google-access-level";
-import { isGooglePlayCatalogActive } from "@/lib/subscriptions/google-product-catalog";
+import {
+  isGooglePlayCatalogActive,
+  isGooglePlayPilotActive,
+} from "@/lib/subscriptions/google-product-catalog";
+import { isGooglePlayActiveForPayer } from "@/lib/subscriptions/google-play-pilot";
 import { getSubscriptionPurchaseV2 } from "@/lib/subscriptions/google-play-api";
 import {
   GoogleDbError,
@@ -79,6 +86,7 @@ export type GooglePurchaseErrorCode =
   | "account_mismatch"
   | "unknown_product"
   | "test_purchase_rejected"
+  | "pilot_real_purchase_rejected"
   | "acknowledge_failed"
   | "internal_error";
 
@@ -159,12 +167,18 @@ async function getOrMintBindingId(service: ServiceClient, payerId: string): Prom
  * FV-663; it is intentionally not wired here.
  */
 export async function beginGooglePlayPurchase(): Promise<BeginGooglePlayPurchaseResult> {
-  if (!isGooglePlayCatalogActive()) return { ok: false, error: "unavailable" };
+  if (!isGooglePlayCatalogActive() && !isGooglePlayPilotActive()) return { ok: false, error: "unavailable" };
 
   try {
     const payer = await resolvePayer();
     if (!payer.ok) return payer;
-    const bindingId = await getOrMintBindingId(createServiceClient(), payer.payerId);
+    const service = createServiceClient();
+    // FV-669: payer gate, after the payer is derived from the session. Writes
+    // nothing (not even the binding mint) for a payer the pilot does not cover.
+    if (!(await isGooglePlayActiveForPayer(service, payer.payerId))) {
+      return { ok: false, error: "unavailable" };
+    }
+    const bindingId = await getOrMintBindingId(service, payer.payerId);
     return { ok: true, obfuscatedAccountId: bindingId };
   } catch (err) {
     console.error(
@@ -183,7 +197,7 @@ export async function submitGooglePurchase(
   input: SubmitGooglePurchaseInput,
 ): Promise<SubmitGooglePurchaseResult> {
   // Lock 2 of 3 (record 6.1): refuse before touching Google or the database.
-  if (!isGooglePlayCatalogActive()) return { ok: false, error: "unavailable" };
+  if (!isGooglePlayCatalogActive() && !isGooglePlayPilotActive()) return { ok: false, error: "unavailable" };
 
   const parsed = SubmitGooglePurchaseSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid_input" };
@@ -193,6 +207,13 @@ export async function submitGooglePurchase(
     const payer = await resolvePayer();
     if (!payer.ok) return payer;
     const payerId = payer.payerId;
+
+    const service = createServiceClient();
+    // FV-669: payer gate (global flag, or pilot + allowlisted), before Google
+    // or any write. The payer id is the session user's, never client input.
+    if (!(await isGooglePlayActiveForPayer(service, payerId))) {
+      return { ok: false, error: "unavailable" };
+    }
 
     // 3. Google is the truth. Nothing below runs unless it confirms the token.
     const got = await getSubscriptionPurchaseV2(purchaseToken);
@@ -205,8 +226,6 @@ export async function submitGooglePurchase(
       return { ok: false, error: "verification_failed" };
     }
     const purchase = got.purchase;
-
-    const service = createServiceClient();
 
     // 4a. Ownership: a token already bound to a different payer is refused.
     const { data: owner, error: ownerError } = await service

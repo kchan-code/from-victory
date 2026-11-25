@@ -11,6 +11,7 @@ import {
 } from "./google-access-level";
 import { getSubscriptionPurchaseV2 } from "./google-play-api";
 import { isGooglePlayCatalogActive } from "./google-product-catalog";
+import { isGooglePlayActiveForPayer } from "./google-play-pilot";
 
 type ServiceClient = SupabaseClient<Database>;
 
@@ -54,7 +55,9 @@ export async function getGoogleEntitlementSnapshotForPayer(
   payerId: string,
   now: Date = new Date(),
 ): Promise<GoogleEntitlementSnapshot> {
-  if (!isGooglePlayCatalogActive()) {
+  // FV-669: global flag, or pilot + allowlisted payer. A lookup error is
+  // "not active" (fail closed).
+  if (!(await isGooglePlayActiveForPayer(service, payerId))) {
     return {
       level: "blocked",
       latestEnd: null,
@@ -63,10 +66,13 @@ export async function getGoogleEntitlementSnapshotForPayer(
     };
   }
 
-  const { data, error } = await service
+  let query = service
     .from("google_subscriptions")
     .select("product_id, status, expires_at")
     .eq("payer_id", payerId);
+  // Pilot mode (global flag off): only Google-marked TEST rows can grant.
+  if (!isGooglePlayCatalogActive()) query = query.eq("is_test_purchase", true);
+  const { data, error } = await query;
 
   if (error) {
     console.error(
@@ -147,7 +153,7 @@ export async function hasEverHeldGoogleEntitlement(
   service: ServiceClient,
   payerId: string,
 ): Promise<boolean> {
-  if (!isGooglePlayCatalogActive()) return false;
+  if (!(await isGooglePlayActiveForPayer(service, payerId))) return false;
 
   const { count, error } = await service
     .from("google_subscriptions")
@@ -197,14 +203,17 @@ export async function getGoogleCancelableSubscriptionsForPayer(
   payerId: string,
   now: Date = new Date(),
 ): Promise<GoogleCancelableSubscriptionsResult> {
-  if (!isGooglePlayCatalogActive()) {
+  if (!(await isGooglePlayActiveForPayer(service, payerId))) {
     return { rows: [], readError: false };
   }
 
-  const { data, error } = await service
+  let query = service
     .from("google_subscriptions")
     .select("product_id, purchase_token, status, expires_at")
     .eq("payer_id", payerId);
+  // Pilot mode (global flag off): only Google-marked TEST rows are in scope.
+  if (!isGooglePlayCatalogActive()) query = query.eq("is_test_purchase", true);
+  const { data, error } = await query;
 
   if (error) {
     console.error(

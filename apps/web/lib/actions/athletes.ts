@@ -32,7 +32,11 @@ import { deliverInBackground } from "@/lib/monitoring/deliver";
 import { notifyError } from "@/lib/monitoring/notify";
 import { getRequestShellCapability } from "@/lib/native-shell";
 import { isRestrictedShell } from "@/lib/native-shell-restricted";
-import { isGooglePlayCatalogActive } from "@/lib/subscriptions/google-product-catalog";
+import {
+  isGooglePlayCatalogActive,
+  isGooglePlayPilotActive,
+} from "@/lib/subscriptions/google-product-catalog";
+import { isGooglePlayActiveForPayer } from "@/lib/subscriptions/google-play-pilot";
 import { getSubscribeEntitlementState } from "@/lib/subscriptions/subscribe-guard";
 import { createServiceClient } from "@/lib/supabase/service";
 import { assertAthleteCapacity } from "@/lib/subscriptions/apple-capacity";
@@ -103,13 +107,24 @@ export async function createAthlete(
   // authorization; this branch only ever removes an action. ios-iap and
   // web/PWA are unchanged.
   const shellCapability = await getRequestShellCapability();
-  const androidPlayCatalogEnabled =
-    shellCapability === "android-play" && isGooglePlayCatalogActive();
+  // FV-669: with either Play flag on, derive the parent from the session first
+  // and ask the payer-scoped gate (global flag, or pilot + allowlisted). Both
+  // flags unset: nothing here runs, exactly as before.
+  let androidPlayCatalogEnabled = false;
   let parentId: string | null = null;
   let androidPlayPurchaseEligible = false;
-  if (androidPlayCatalogEnabled) {
+  if (
+    shellCapability === "android-play" &&
+    (isGooglePlayCatalogActive() || isGooglePlayPilotActive())
+  ) {
     const auth = await requireParent();
     parentId = auth.userId;
+    // Global flag on: no lookup (and no service client) needed.
+    androidPlayCatalogEnabled =
+      isGooglePlayCatalogActive() ||
+      (await isGooglePlayActiveForPayer(createServiceClient(), parentId));
+  }
+  if (androidPlayCatalogEnabled && parentId) {
     const entitlement = await getSubscribeEntitlementState(parentId);
     androidPlayPurchaseEligible =
       entitlement.status === "not_entitled" ||

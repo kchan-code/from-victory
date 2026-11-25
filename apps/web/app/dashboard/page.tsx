@@ -6,7 +6,7 @@ import { ageFromBirthdate } from "@/lib/age";
 import { requireParent } from "@/lib/auth/guards";
 import { getRequestShellCapability } from "@/lib/native-shell";
 import { isRestrictedShell } from "@/lib/native-shell-restricted";
-import { isGooglePlayCatalogActive } from "@/lib/subscriptions/google-product-catalog";
+import { isGooglePlayActiveForPayer } from "@/lib/subscriptions/google-play-pilot";
 import { getParentAccessLevel } from "@/lib/subscriptions/access";
 import { getSubscribeEntitlementState } from "@/lib/subscriptions/subscribe-guard";
 import { getPayerSeatStateForCurrentParent } from "@/lib/subscriptions/seat-state";
@@ -71,7 +71,8 @@ export default async function DashboardPage() {
 
   const shellCapability = await getRequestShellCapability();
   const androidPlayCatalogEnabled =
-    shellCapability === "android-play" && isGooglePlayCatalogActive();
+    shellCapability === "android-play" &&
+    (await isGooglePlayActiveForPayer(createServiceClient(), userId));
   let androidPlayEntitlementState:
     | Awaited<ReturnType<typeof getSubscribeEntitlementState>>
     | null = null;
