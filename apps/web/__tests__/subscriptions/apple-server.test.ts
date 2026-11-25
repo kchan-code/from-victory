@@ -17,7 +17,7 @@
  * boundary — no real certs, no real network calls to Apple, ever.
  */
 
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
@@ -111,6 +111,7 @@ import {
   describeVerificationFailure,
 } from "@/lib/subscriptions/apple-server";
 import { readFileSync } from "node:fs";
+import { generateKeyPairSync } from "node:crypto";
 
 const TRANSACTION_JWS = "ey.fake.transaction";
 const RENEWAL_JWS = "ey.fake.renewal";
@@ -580,5 +581,154 @@ describe("getAllSubscriptionStatuses", () => {
 
     const items = await getAllSubscriptionStatuses("otid_1", "Production");
     expect(items).toHaveLength(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// loadSigningKey — APPLE_IAP_SIGNING_KEY_BASE64 (FV-788)
+//
+// Exercised through getAllSubscriptionStatuses (which calls getApiClient ->
+// buildApiClient -> loadSigningKey). Same `vi.resetModules()` + fresh
+// `import()` approach as the root-certificate tests above, for the same
+// reason: the API client is cached at module scope after its first build.
+// ---------------------------------------------------------------------------
+
+describe("loadSigningKey — APPLE_IAP_SIGNING_KEY_BASE64", () => {
+  // A throwaway P-256 PKCS#8 key generated per run (same format as Apple's
+  // .p8). The code under test parses the key, so the armor alone is not
+  // enough. node:crypto is not mocked in this file.
+  const FAKE_P8 = generateKeyPairSync("ec", {
+    namedCurve: "P-256",
+    privateKeyEncoding: { type: "pkcs8", format: "pem" },
+    publicKeyEncoding: { type: "spki", format: "pem" },
+  }).privateKey;
+
+  beforeEach(() => {
+    vi.resetModules();
+    delete process.env.APPLE_IAP_SIGNING_KEY_BASE64;
+    getAllSubscriptionStatusesMock.mockResolvedValue({ environment: "Production", data: [] });
+  });
+
+  afterEach(() => {
+    delete process.env.APPLE_IAP_SIGNING_KEY_BASE64;
+    getAllSubscriptionStatusesMock.mockReset();
+  });
+
+  it("wins over APPLE_IAP_SIGNING_KEY_PATH and is passed to the API client without touching the filesystem", async () => {
+    process.env.APPLE_IAP_SIGNING_KEY_BASE64 = Buffer.from(FAKE_P8).toString("base64");
+    process.env.APPLE_IAP_SIGNING_KEY_PATH = "/definitely/does/not/exist.p8";
+
+    const fresh = await import("@/lib/subscriptions/apple-server");
+    await fresh.getAllSubscriptionStatuses("otid_1", "Production");
+
+    expect(readFileSync).not.toHaveBeenCalled();
+    expect(apiClientCtorMock).toHaveBeenCalledTimes(1);
+    expect(apiClientCtorMock.mock.calls[0]).toEqual([
+      FAKE_P8,
+      "KEYID123",
+      "issuer-123",
+      "com.fromvictoryapp.app",
+      "Production",
+    ]);
+  });
+
+  it("accepts a line-wrapped value (Linux `base64` wraps at 76 columns)", async () => {
+    const oneLine = Buffer.from(FAKE_P8).toString("base64");
+    process.env.APPLE_IAP_SIGNING_KEY_BASE64 = `${oneLine.slice(0, 40)}\n${oneLine.slice(40)}\n`;
+
+    const fresh = await import("@/lib/subscriptions/apple-server");
+    await fresh.getAllSubscriptionStatuses("otid_1", "Production");
+
+    expect(apiClientCtorMock.mock.calls[0]?.[0]).toBe(FAKE_P8);
+  });
+
+  it("rejects a value that is not base64, naming the variable and not the value", async () => {
+    process.env.APPLE_IAP_SIGNING_KEY_BASE64 = "not-valid-base64!!!";
+
+    const fresh = await import("@/lib/subscriptions/apple-server");
+    const err = await fresh
+      .getAllSubscriptionStatuses("otid_1", "Production")
+      .then(() => null, (e: unknown) => e as Error);
+
+    expect(err?.message).toMatch(/APPLE_IAP_SIGNING_KEY_BASE64 is not valid base64/);
+    expect(err?.message).not.toContain("not-valid-base64!!!");
+    expect(apiClientCtorMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects base64 that does not decode to a private key, without echoing the decoded text", async () => {
+    process.env.APPLE_IAP_SIGNING_KEY_BASE64 = Buffer.from("some-other-secret-text").toString("base64");
+
+    const fresh = await import("@/lib/subscriptions/apple-server");
+    const err = await fresh
+      .getAllSubscriptionStatuses("otid_1", "Production")
+      .then(() => null, (e: unknown) => e as Error);
+
+    expect(err?.message).toMatch(/APPLE_IAP_SIGNING_KEY_BASE64 did not decode to a usable EC private key/);
+    expect(err?.message).not.toContain("some-other-secret-text");
+    expect(apiClientCtorMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects a truncated key (armor intact, body cut short) without echoing any of it", async () => {
+    const lines = FAKE_P8.trim().split("\n");
+    const body = lines.slice(1, -1).join("");
+    const truncated = `${lines[0]}\n${body.slice(0, 24)}\n${lines[lines.length - 1]}\n`;
+    process.env.APPLE_IAP_SIGNING_KEY_BASE64 = Buffer.from(truncated).toString("base64");
+
+    const fresh = await import("@/lib/subscriptions/apple-server");
+    const err = await fresh
+      .getAllSubscriptionStatuses("otid_1", "Production")
+      .then(() => null, (e: unknown) => e as Error);
+
+    expect(err?.message).toMatch(/APPLE_IAP_SIGNING_KEY_BASE64 did not decode to a usable EC private key/);
+    expect(err?.message).not.toContain(body.slice(0, 24));
+    expect(apiClientCtorMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects a key of the wrong type (RSA) with the same fixed message", async () => {
+    const rsa = generateKeyPairSync("rsa", {
+      modulusLength: 2048,
+      privateKeyEncoding: { type: "pkcs8", format: "pem" },
+      publicKeyEncoding: { type: "spki", format: "pem" },
+    }).privateKey;
+    process.env.APPLE_IAP_SIGNING_KEY_BASE64 = Buffer.from(rsa).toString("base64");
+
+    const fresh = await import("@/lib/subscriptions/apple-server");
+    await expect(fresh.getAllSubscriptionStatuses("otid_1", "Production")).rejects.toThrow(
+      /APPLE_IAP_SIGNING_KEY_BASE64 did not decode to a usable EC private key/,
+    );
+    expect(apiClientCtorMock).not.toHaveBeenCalled();
+  });
+
+  it("tells the operator to encode first when the raw key text was pasted, without echoing it", async () => {
+    process.env.APPLE_IAP_SIGNING_KEY_BASE64 = FAKE_P8;
+
+    const fresh = await import("@/lib/subscriptions/apple-server");
+    const err = await fresh
+      .getAllSubscriptionStatuses("otid_1", "Production")
+      .then(() => null, (e: unknown) => e as Error);
+
+    expect(err?.message).toMatch(/APPLE_IAP_SIGNING_KEY_BASE64 holds the raw key text/);
+    expect(err?.message).not.toContain(FAKE_P8.trim().split("\n")[1]);
+    expect(apiClientCtorMock).not.toHaveBeenCalled();
+  });
+
+  it("falls back to APPLE_IAP_SIGNING_KEY_PATH when the base64 variable is unset or blank", async () => {
+    process.env.APPLE_IAP_SIGNING_KEY_BASE64 = "   ";
+
+    const fresh = await import("@/lib/subscriptions/apple-server");
+    await fresh.getAllSubscriptionStatuses("otid_1", "Production");
+
+    expect(readFileSync).toHaveBeenCalledWith("/fake/signing-key.p8", "utf8");
+    expect(apiClientCtorMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("throws the existing not-configured error when neither variable is set", async () => {
+    delete process.env.APPLE_IAP_SIGNING_KEY_PATH;
+
+    const fresh = await import("@/lib/subscriptions/apple-server");
+    await expect(fresh.getAllSubscriptionStatuses("otid_1", "Production")).rejects.toThrow(
+      /APPLE_IAP_SIGNING_KEY_PATH is not configured/,
+    );
+    expect(apiClientCtorMock).not.toHaveBeenCalled();
   });
 });
