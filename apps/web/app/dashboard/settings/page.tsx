@@ -44,6 +44,7 @@ import {
 } from "@/lib/subscriptions/google-product-catalog";
 import { createClient } from "@/lib/supabase/server";
 import { isGooglePlayActiveForPayer } from "@/lib/subscriptions/google-play-pilot";
+import { isGooglePlayCatalogActive } from "@/lib/subscriptions/google-product-catalog";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getDisplayedAppleProductIdResult } from "@/lib/subscriptions/apple";
 import { priceIdToLabel } from "@/lib/subscriptions/plans";
@@ -281,7 +282,9 @@ export default async function DashboardSettingsPage() {
           .from("google_subscriptions")
           .select("product_id, base_plan_id, offer_id, status, expires_at, acknowledged, created_at")
           .eq("payer_id", userId)
-          .eq("is_test_purchase", false);
+          // FV-669: pilot mode (public flag off) shows TEST rows only; public mode
+      // shows real rows only, as before.
+      .eq("is_test_purchase", !isGooglePlayCatalogActive());
           if (!googleRowsError && googleRows && googleRows.length > 0) {
             const levelRank = { full: 2, degraded: 1, blocked: 0 } as const;
             const sorted = [...googleRows]

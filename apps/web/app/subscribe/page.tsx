@@ -129,9 +129,9 @@ export default async function SubscribePage(props: Props) {
     let googleEverHeld = false;
     let providerHistoryReadError = false;
     if (
-      (await isGooglePlayActiveForPayer(createServiceClient(), userId)) &&
       subReadError === null &&
-      !hadStripeSubscriptionBeforeCheckout
+      !hadStripeSubscriptionBeforeCheckout &&
+      (await isGooglePlayActiveForPayer(createServiceClient(), userId))
     ) {
       try {
         const service = createServiceClient();
