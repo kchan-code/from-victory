@@ -41,9 +41,9 @@ import { isRestrictedShell } from "@/lib/native-shell-restricted";
 import { getSubscribeEntitlementState } from "@/lib/subscriptions/subscribe-guard";
 import {
   GOOGLE_PLAY_CATALOG,
-  isGooglePlayCatalogActive,
 } from "@/lib/subscriptions/google-product-catalog";
 import { createClient } from "@/lib/supabase/server";
+import { isGooglePlayActiveForPayer } from "@/lib/subscriptions/google-play-pilot";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getDisplayedAppleProductIdResult } from "@/lib/subscriptions/apple";
 import { priceIdToLabel } from "@/lib/subscriptions/plans";
@@ -130,7 +130,8 @@ export default async function DashboardSettingsPage() {
   const nativeShell = shellCapability !== null;
   const iosIap = shellCapability === "ios-iap";
   const androidPlayCatalogEnabled =
-    shellCapability === "android-play" && isGooglePlayCatalogActive();
+    shellCapability === "android-play" &&
+    (await isGooglePlayActiveForPayer(createServiceClient(), userId));
   let googleEntitlementState:
     | Awaited<ReturnType<typeof getSubscribeEntitlementState>>
     | null = null;

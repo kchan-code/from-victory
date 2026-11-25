@@ -5,11 +5,11 @@ import { getRequestShellCapability } from "@/lib/native-shell";
 import { isRestrictedShell } from "@/lib/native-shell-restricted";
 import {
   GOOGLE_PLAY_CATALOG,
-  isGooglePlayCatalogActive,
 } from "@/lib/subscriptions/google-product-catalog";
 import { getSubscribeEntitlementState } from "@/lib/subscriptions/subscribe-guard";
 import { getGoogleEntitlementSnapshotForPayer } from "@/lib/subscriptions/google";
 import { googleSubscriptionAccessLevel } from "@/lib/subscriptions/google-access-level";
+import { isGooglePlayActiveForPayer } from "@/lib/subscriptions/google-play-pilot";
 import { createServiceClient } from "@/lib/supabase/service";
 import {
   capacityForAppleProduct,
@@ -62,7 +62,8 @@ export default async function NewAthletePage() {
   // trial-quote (Stripe) read entirely. ios-iap and web are unchanged.
   const shellCapability = await getRequestShellCapability();
   const androidPlayCatalogEnabled =
-    shellCapability === "android-play" && isGooglePlayCatalogActive();
+    shellCapability === "android-play" &&
+    (await isGooglePlayActiveForPayer(createServiceClient(), parentId));
   let androidPlayPurchaseEligible = false;
   if (androidPlayCatalogEnabled) {
     const entitlement = await getSubscribeEntitlementState(parentId);

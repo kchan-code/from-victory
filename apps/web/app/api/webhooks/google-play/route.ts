@@ -40,7 +40,10 @@ import { z } from "zod";
 
 import { deliverInBackground } from "@/lib/monitoring/deliver";
 import { notifyError } from "@/lib/monitoring/notify";
-import { isGooglePlayCatalogActive } from "@/lib/subscriptions/google-product-catalog";
+import {
+  isGooglePlayCatalogActive,
+  isGooglePlayPilotActive,
+} from "@/lib/subscriptions/google-product-catalog";
 import { verifyPubSubPush } from "@/lib/subscriptions/google-play-auth";
 import { parseDeveloperNotification, processGoogleNotification } from "@/lib/subscriptions/google-play-rtdn";
 import { GoogleDbError } from "@/lib/subscriptions/google-play-sync";
@@ -75,7 +78,10 @@ export async function POST(req: NextRequest) {
   }
 
   // 2. Dormant lock: authenticated, answered, otherwise inert.
-  if (!isGooglePlayCatalogActive()) return ok();
+  //    FV-669: with only the pilot flag on, the push proceeds, but
+  //    processGoogleNotification handles ONLY allowlisted payers' test
+  //    purchases; everything else is the same 2xx no-op.
+  if (!isGooglePlayCatalogActive() && !isGooglePlayPilotActive()) return ok();
 
   try {
     // 3. Parse. Anything unreadable from an authenticated push is permanent:

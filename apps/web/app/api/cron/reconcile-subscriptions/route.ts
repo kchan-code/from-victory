@@ -59,7 +59,10 @@ import {
   TIME_BUDGET_MS,
   type PassCounts,
 } from "@/lib/subscriptions/reconcile";
-import { isGooglePlayCatalogActive } from "@/lib/subscriptions/google-product-catalog";
+import {
+  isGooglePlayCatalogActive,
+  isGooglePlayPilotActive,
+} from "@/lib/subscriptions/google-product-catalog";
 
 const FAILED_PASS: PassCounts = {
   checked: 0,
@@ -117,7 +120,9 @@ async function handleCronRequest(req: NextRequest) {
   // Apple and is fully isolated: nothing it does can change their results.
   let google: PassCounts | undefined;
   let googleStalled: number | null | undefined;
-  if (isGooglePlayCatalogActive()) {
+  // FV-669: with only the pilot flag on, the pass and the stall check are
+  // restricted to allowlisted payers' test rows inside those modules.
+  if (isGooglePlayCatalogActive() || isGooglePlayPilotActive()) {
     try {
       const { reconcileGooglePass } = await import("@/lib/subscriptions/google-reconcile");
       google = await reconcileGooglePass(service, deadlineMs);

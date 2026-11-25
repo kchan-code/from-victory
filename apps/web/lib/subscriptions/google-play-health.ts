@@ -19,7 +19,11 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { deliverInBackground } from "@/lib/monitoring/deliver";
 import { notifyError } from "@/lib/monitoring/notify";
 import type { GoogleSubscriptionStatus } from "@/lib/subscriptions/google-access-level";
-import { isGooglePlayCatalogActive } from "@/lib/subscriptions/google-product-catalog";
+import {
+  isGooglePlayCatalogActive,
+  isGooglePlayPilotActive,
+} from "@/lib/subscriptions/google-product-catalog";
+import { listAllowlistedPayerIds } from "@/lib/subscriptions/google-play-pilot";
 
 /** Hours past expiry (with no fresh verification) before a row counts as stalled. */
 export const GOOGLE_STALL_THRESHOLD_HOURS = 24;
@@ -72,18 +76,30 @@ export interface StallCheckDeps {
  * without detail). Makes no database call while dormant.
  */
 export async function checkGooglePipelineStalls(deps: StallCheckDeps = {}): Promise<number | null> {
-  if (!isGooglePlayCatalogActive()) return null;
+  const globalActive = isGooglePlayCatalogActive();
+  if (!globalActive && !isGooglePlayPilotActive()) return null;
 
   const now = (deps.now ?? (() => new Date()))();
   const hours = deps.thresholdHours ?? GOOGLE_STALL_THRESHOLD_HOURS;
   const cutoffIso = new Date(now.getTime() - hours * 60 * 60 * 1000).toISOString();
 
-  const { data, error } = await createServiceClient()
+  const service = createServiceClient();
+  // FV-669 pilot mode: no payer is in scope here, so only allowlisted payers'
+  // test rows are checked. An unreadable or empty allowlist checks nothing.
+  let pilotPayerIds: string[] | null = null;
+  if (!globalActive) {
+    pilotPayerIds = await listAllowlistedPayerIds(service);
+    if (pilotPayerIds === null) return null;
+    if (pilotPayerIds.length === 0) return 0;
+  }
+
+  let query = service
     .from("google_subscriptions")
     .select("status, expires_at, last_verified_at")
     .in("status", [...GOOGLE_STALL_WATCHED_STATUSES])
-    .lt("expires_at", cutoffIso)
-    .limit(1000);
+    .lt("expires_at", cutoffIso);
+  if (pilotPayerIds) query = query.in("payer_id", pilotPayerIds).eq("is_test_purchase", true);
+  const { data, error } = await query.limit(1000);
   if (error) {
     console.error(`[google-play-health] stall check read failed (${error.code ?? "unknown"}).`);
     deliverInBackground(

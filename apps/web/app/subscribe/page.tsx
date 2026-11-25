@@ -18,12 +18,12 @@ import { isSubscriptionEnforcementEnabled } from "@/lib/subscriptions/enforce";
 import { hasEverHeldGoogleEntitlement } from "@/lib/subscriptions/google";
 import {
   GOOGLE_PLAY_CATALOG,
-  isGooglePlayCatalogActive,
 } from "@/lib/subscriptions/google-product-catalog";
 import { getPayerBillingIssue } from "@/lib/subscriptions/billing-issue";
 import { PaymentIssueNotice } from "@/components/billing/PaymentIssueNotice";
 import { getSubscribeEntitlementState } from "@/lib/subscriptions/subscribe-guard";
 import { createClient } from "@/lib/supabase/server";
+import { isGooglePlayActiveForPayer } from "@/lib/subscriptions/google-play-pilot";
 import { createServiceClient } from "@/lib/supabase/service";
 import { SubscribeForm } from "@/components/subscribe/SubscribeForm";
 import { AppleSubscribeSection } from "@/components/subscribe/AppleSubscribeSection";
@@ -129,7 +129,7 @@ export default async function SubscribePage(props: Props) {
     let googleEverHeld = false;
     let providerHistoryReadError = false;
     if (
-      isGooglePlayCatalogActive() &&
+      (await isGooglePlayActiveForPayer(createServiceClient(), userId)) &&
       subReadError === null &&
       !hadStripeSubscriptionBeforeCheckout
     ) {
@@ -174,7 +174,8 @@ export default async function SubscribePage(props: Props) {
   // ("legacy-native", restricted, unchanged) — see getRequestShellCapability().
   const shellCapability = await getRequestShellCapability();
   const androidPlayCatalogEnabled =
-    shellCapability === "android-play" && isGooglePlayCatalogActive();
+    shellCapability === "android-play" &&
+    (await isGooglePlayActiveForPayer(createServiceClient(), userId));
   const googlePlayUiEnabled =
     androidPlayCatalogEnabled &&
     (entitlementState.status === "not_entitled" ||

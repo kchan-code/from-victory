@@ -786,3 +786,107 @@ describe("submitGooglePurchase: linked purchase token", () => {
     expect(alerts.some((a) => JSON.stringify(a[2]) === JSON.stringify({ row_id: "row-old" }))).toBe(true);
   });
 });
+
+// ---------------------------------------------------------------------------
+// FV-669: account-only pilot (GOOGLE_PLAY_PILOT_ACTIVE), global flag OFF
+// ---------------------------------------------------------------------------
+
+describe("pilot mode (FV-669): pilot flag on, global flag off", () => {
+  beforeEach(() => {
+    delete process.env.GOOGLE_PLAY_CATALOG_ACTIVE;
+    process.env.GOOGLE_PLAY_PILOT_ACTIVE = "1";
+  });
+  afterEach(() => {
+    delete process.env.GOOGLE_PLAY_PILOT_ACTIVE;
+  });
+
+  it("allowlisted payer + Google-verified TEST purchase: admitted, row written, acknowledged", async () => {
+    tables.google_license_testers.add(PAYER);
+    googleReturns(SENTINEL_TOKEN, { testPurchase: true });
+    expect(await submit()).toEqual({ ok: true, entitled: true, acknowledged: true });
+    expect(rowFor(SENTINEL_TOKEN)).toMatchObject({ payer_id: PAYER, is_test_purchase: true, acknowledged: true });
+    expect(events.indexOf("ack")).toBeGreaterThan(events.indexOf("row_written"));
+  });
+
+  it("allowlisted payer + REAL purchase: rejected, no row, never acknowledged", async () => {
+    tables.google_license_testers.add(PAYER);
+    googleReturns(SENTINEL_TOKEN);
+    expect(await submit()).toEqual({ ok: false, error: "pilot_real_purchase_rejected" });
+    expect(subRows()).toEqual([]);
+    expect(events).not.toContain("ack");
+  });
+
+  it("allowlisted payer: a client-supplied testPurchase hint is ignored (Google decides)", async () => {
+    tables.google_license_testers.add(PAYER);
+    googleReturns(SENTINEL_TOKEN); // Google says: real purchase
+    expect(await submit(SENTINEL_TOKEN, { isTestPurchase: true, testPurchase: true })).toEqual({
+      ok: false,
+      error: "pilot_real_purchase_rejected",
+    });
+    expect(subRows()).toEqual([]);
+  });
+
+  it("NON-allowlisted payer: submit is unavailable before Google is called; nothing written", async () => {
+    googleReturns(SENTINEL_TOKEN, { testPurchase: true });
+    expect(await submit()).toEqual({ ok: false, error: "unavailable" });
+    expect(fetchCalls).toEqual([]);
+    expect(subRows()).toEqual([]);
+    expect(events).not.toContain("ack");
+  });
+
+  it("NON-allowlisted payer: begin is unavailable and mints no binding", async () => {
+    tables.google_purchase_bindings.clear();
+    expect(await beginGooglePlayPurchase()).toEqual({ ok: false, error: "unavailable" });
+    expect(events).not.toContain("binding_minted");
+  });
+
+  it("allowlisted payer: begin returns the binding id", async () => {
+    tables.google_license_testers.add(PAYER);
+    expect(await beginGooglePlayPurchase()).toEqual({ ok: true, obfuscatedAccountId: SENTINEL_ACCOUNT_ID });
+  });
+
+  it("allowlist lookup error: fails closed (unavailable), no Google call, no write", async () => {
+    tables.google_license_testers.add(PAYER);
+    googleReturns(SENTINEL_TOKEN, { testPurchase: true });
+    dbFault = { table: "google_license_testers", op: "select" };
+    expect(await submit()).toEqual({ ok: false, error: "unavailable" });
+    expect(await beginGooglePlayPurchase()).toEqual({ ok: false, error: "unavailable" });
+    expect(fetchCalls).toEqual([]);
+    expect(subRows()).toEqual([]);
+  });
+
+  it("role gate still comes first: an athlete session is refused before any allowlist lookup", async () => {
+    tables.google_license_testers.add(PAYER);
+    profileRole = "athlete";
+    expect(await submit()).toEqual({ ok: false, error: "not_authorized" });
+    expect(await beginGooglePlayPurchase()).toEqual({ ok: false, error: "not_authorized" });
+    expect(createServiceCalls).toBe(0);
+  });
+
+  for (const value of ["", "0", "true", "yes", " 1", "1 "]) {
+    it(`pilot flag must be exactly "1" (flag=${JSON.stringify(value)}): refuses before auth, Google or the database`, async () => {
+      process.env.GOOGLE_PLAY_PILOT_ACTIVE = value;
+      tables.google_license_testers.add(PAYER);
+      googleReturns(SENTINEL_TOKEN, { testPurchase: true });
+      expect(await submit()).toEqual({ ok: false, error: "unavailable" });
+      expect(await beginGooglePlayPurchase()).toEqual({ ok: false, error: "unavailable" });
+      expect(fetchCalls).toEqual([]);
+      expect(createClientCalls).toBe(0);
+      expect(createServiceCalls).toBe(0);
+    });
+  }
+
+  it("global flag ON (pilot flag also set): existing behavior, a real purchase from a non-allowlisted payer is admitted", async () => {
+    process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
+    googleReturns(SENTINEL_TOKEN);
+    expect(await submit()).toEqual({ ok: true, entitled: true, acknowledged: true });
+    expect(rowFor(SENTINEL_TOKEN)).toMatchObject({ is_test_purchase: false });
+  });
+
+  it("global flag ON: a test purchase from a non-allowlisted payer is still test_purchase_rejected", async () => {
+    process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
+    googleReturns(SENTINEL_TOKEN, { testPurchase: true });
+    expect(await submit()).toEqual({ ok: false, error: "test_purchase_rejected" });
+    expect(subRows()).toEqual([]);
+  });
+});

@@ -39,13 +39,19 @@ import { z } from "zod";
 import { createServiceClient } from "@/lib/supabase/service";
 import type { TablesUpdate } from "@/lib/supabase/types";
 import { googleSubscriptionAccessLevel } from "@/lib/subscriptions/google-access-level";
-import { GOOGLE_PLAY_PACKAGE_NAME, googleCatalogEntry } from "@/lib/subscriptions/google-product-catalog";
+import {
+  GOOGLE_PLAY_PACKAGE_NAME,
+  googleCatalogEntry,
+  isGooglePlayCatalogActive,
+  isGooglePlayPilotActive,
+} from "@/lib/subscriptions/google-product-catalog";
 import { getSubscriptionPurchaseV2, type ParsedGooglePurchase } from "@/lib/subscriptions/google-play-api";
 import {
   acknowledgeAndRecord,
   alertOps,
   checkPurchaseAdmission,
   dbFail,
+  isPayerAllowlisted,
   mirrorFields,
   refreshLinkedRow,
   writeMirrorRow,
@@ -132,12 +138,23 @@ export async function processGoogleNotification(
   const voided = notification.kind === "voided";
   const service = createServiceClient();
 
+  // FV-669 pilot mode: the global flag is off and only the pilot flag lets
+  // this run. Then ONLY an allowlisted payer's purchases are processed, and
+  // only Google-marked TEST purchases (checked below / in admission).
+  const pilotOnly = !isGooglePlayCatalogActive();
+  if (pilotOnly && !isGooglePlayPilotActive()) return "ignored";
+
   const { data: row, error: rowError } = await service
     .from("google_subscriptions")
     .select("id, payer_id, status")
     .eq("purchase_token", token)
     .maybeSingle();
   if (rowError) dbFail("row_read", rowError);
+
+  // An owned row's payer is known now: refuse before any Google call or write
+  // when that payer is not allowlisted. (A lookup error throws a GoogleDbError,
+  // which the route answers with a retryable 5xx; nothing is processed.)
+  if (row && pilotOnly && !(await isPayerAllowlisted(service, row.payer_id))) return "ignored";
 
   // Only a genuinely transient failure (`unavailable`) may be retried. Anything
   // else is permanent for this message, and retrying it would loop forever.
@@ -197,6 +214,11 @@ export async function processGoogleNotification(
   }
 
   const purchase = got.purchase;
+  if (row && pilotOnly && purchase.isTestPurchase !== true) {
+    // Pilot: a non-test purchase is never refreshed, written or acknowledged.
+    console.warn(`${P} rejected: real purchase while only the pilot is active.`);
+    return "ignored";
+  }
   return row
     ? applyToOwnedRow(service, row, token, purchase, voided, now)
     : applyToUnownedToken(service, token, purchase, now, voided);

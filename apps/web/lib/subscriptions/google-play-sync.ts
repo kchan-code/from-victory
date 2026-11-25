@@ -20,7 +20,11 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { deliverInBackground } from "@/lib/monitoring/deliver";
 import { notifyError } from "@/lib/monitoring/notify";
 import { googleSubscriptionAccessLevel } from "@/lib/subscriptions/google-access-level";
-import { googleCatalogEntry } from "@/lib/subscriptions/google-product-catalog";
+import {
+  googleCatalogEntry,
+  isGooglePlayCatalogActive,
+} from "@/lib/subscriptions/google-product-catalog";
+import { lookupPayerAllowlisted } from "@/lib/subscriptions/google-play-pilot";
 import {
   acknowledgeWithRetry,
   getSubscriptionPurchaseV2,
@@ -59,6 +63,21 @@ export async function readBindingId(
     .maybeSingle();
   if (error) dbFail("binding_read", error);
   return data ? data.binding_id : null;
+}
+
+/**
+ * Whether the payer is on `google_license_testers` (service role: the table is
+ * not client readable). The ONE allowlist lookup; throws `GoogleDbError` on a
+ * database error so callers decide how to fail (admission: refuse; the pilot
+ * gate: closed).
+ */
+export async function isPayerAllowlisted(
+  service: GoogleServiceClient,
+  payerId: string,
+): Promise<boolean> {
+  const result = await lookupPayerAllowlisted(service, payerId);
+  if (!result.ok) dbFail("tester_read", { code: result.code });
+  return result.allowlisted;
 }
 
 export function mirrorFields(purchase: ParsedGooglePurchase, verifiedAtIso: string) {
@@ -174,13 +193,20 @@ export async function writeMirrorRow(
  * Catalog + license-tester admission for a verified purchase about to be
  * written for `payerId` (record 7.4). Returns the refusal, or null when the
  * purchase may be written. Alerts carry no identifiers.
+ *
+ * PILOT MODE (FV-669): when the global flag is off (the pilot flag is the only
+ * thing that got here), only a Google-verified TEST purchase
+ * (`isTestPurchase`, from the Play Developer API response, never from the
+ * client) from an allowlisted payer is admitted. A real purchase is refused
+ * with "pilot_real_purchase_rejected" for any payer: no row, no acknowledge.
+ * With the global flag on the original rules apply unchanged.
  */
 export async function checkPurchaseAdmission(
   service: GoogleServiceClient,
   payerId: string,
   purchase: ParsedGooglePurchase,
   logPrefix: string = ACTION_LOG_PREFIX,
-): Promise<"unknown_product" | "test_purchase_rejected" | null> {
+): Promise<"unknown_product" | "test_purchase_rejected" | "pilot_real_purchase_rejected" | null> {
   // The catalog must know what was bought (fail closed; ids are Google's).
   if (!googleCatalogEntry(purchase.productId, purchase.basePlanId)) {
     console.warn(`${logPrefix} rejected: product not in catalog.`);
@@ -191,15 +217,20 @@ export async function checkPurchaseAdmission(
     return "unknown_product";
   }
 
+  // Pilot: real money never flows through the pilot.
+  if (!isGooglePlayCatalogActive() && purchase.isTestPurchase !== true) {
+    console.warn(`${logPrefix} rejected: real purchase while only the pilot is active.`);
+    alertOps(
+      `${logPrefix} pilot real purchase rejected`,
+      "A non-test purchase arrived while only the Play pilot is active; nothing granted, not acknowledged",
+    );
+    return "pilot_real_purchase_rejected";
+  }
+
   // Test purchases grant only for allowlisted payers.
   if (purchase.isTestPurchase) {
-    const { data: tester, error: testerError } = await service
-      .from("google_license_testers")
-      .select("payer_id")
-      .eq("payer_id", payerId)
-      .maybeSingle();
-    if (testerError) dbFail("tester_read", testerError);
-    if (!tester) {
+    const allowlisted = await isPayerAllowlisted(service, payerId);
+    if (!allowlisted) {
       console.warn(`${logPrefix} rejected: test purchase from non-allowlisted payer.`);
       alertOps(
         `${logPrefix} test purchase rejected`,

@@ -142,3 +142,17 @@ export function googleCapacityForProduct(productId: string): GoogleTierCeiling |
 export function isGooglePlayCatalogActive(): boolean {
   return process.env.GOOGLE_PLAY_CATALOG_ACTIVE === "1";
 }
+
+/**
+ * Whether the account-only Play PILOT is on (FV-669). Reads
+ * `GOOGLE_PLAY_PILOT_ACTIVE` fresh on every call; the value must be the EXACT
+ * string `"1"`. It is a narrower mode than the global flag: while the global
+ * flag is off, Play billing is reachable only for payers on
+ * `google_license_testers`, and only for Google-verified TEST purchases. It
+ * never widens anything when the global flag is on, and it is never consulted
+ * by pre-sign-in surfaces. Gate on a payer with `isGooglePlayActiveForPayer`
+ * (google-play-pilot.ts), not on this flag alone.
+ */
+export function isGooglePlayPilotActive(): boolean {
+  return process.env.GOOGLE_PLAY_PILOT_ACTIVE === "1";
+}

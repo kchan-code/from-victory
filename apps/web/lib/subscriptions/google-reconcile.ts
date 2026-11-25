@@ -24,6 +24,11 @@ import "server-only";
 
 import type { createServiceClient } from "@/lib/supabase/service";
 import { processGoogleNotification } from "@/lib/subscriptions/google-play-rtdn";
+import { listAllowlistedPayerIds } from "@/lib/subscriptions/google-play-pilot";
+import {
+  isGooglePlayCatalogActive,
+  isGooglePlayPilotActive,
+} from "@/lib/subscriptions/google-product-catalog";
 import {
   emptyCounts,
   rotateWindow,
@@ -75,17 +80,23 @@ function dbError(label: string, error: { code?: string }): Error {
 async function listGoogleRows(
   service: ServiceClient,
   now: Date,
+  /** Pilot mode only (FV-669): restrict to these payers' TEST rows. */
+  pilotPayerIds: string[] | null = null,
 ): Promise<{ batch: GoogleRowLite[]; deferred: number }> {
   const horizon = new Date(now.getTime() + GOOGLE_LOOKAHEAD_MS).toISOString();
   const floor = new Date(now.getTime() - GOOGLE_LOOKBACK_MS).toISOString();
   const out: GoogleRowLite[] = [];
   for (let page = 0; page < MAX_PAGES; page++) {
-    const { data, error } = await service
+    let query = service
       .from("google_subscriptions")
       .select(COLS)
       .in("status", [...GOOGLE_RECONCILE_STATUSES])
       .lte("expires_at", horizon)
-      .gt("expires_at", floor)
+      .gt("expires_at", floor);
+    if (pilotPayerIds) {
+      query = query.in("payer_id", pilotPayerIds).eq("is_test_purchase", true);
+    }
+    const { data, error } = await query
       .order("id", { ascending: true })
       .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
     if (error) throw dbError("google row list failed", error);
@@ -129,7 +140,21 @@ export async function reconcileGooglePass(
   now: Date = new Date(),
 ): Promise<PassCounts> {
   const counts = emptyCounts();
-  const { batch, deferred } = await listGoogleRows(service, now);
+
+  // FV-669 pilot mode (global flag off): reconcile ONLY allowlisted payers'
+  // test rows. An unreadable allowlist, or an empty one, processes nothing.
+  let pilotPayerIds: string[] | null = null;
+  if (!isGooglePlayCatalogActive()) {
+    if (!isGooglePlayPilotActive()) return counts;
+    pilotPayerIds = await listAllowlistedPayerIds(service);
+    if (pilotPayerIds === null) {
+      counts.failed++;
+      return counts;
+    }
+    if (pilotPayerIds.length === 0) return counts;
+  }
+
+  const { batch, deferred } = await listGoogleRows(service, now, pilotPayerIds);
   counts.deferred = deferred;
 
   for (const [i, row] of batch.entries()) {

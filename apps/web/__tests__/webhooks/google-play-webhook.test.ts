@@ -1278,3 +1278,124 @@ describe("fixtures do not depend on the calendar (AC10)", () => {
     expect(PAST.startsWith("2020-")).toBe(true);
   });
 });
+
+// ---------------------------------------------------------------------------
+// FV-669: account-only pilot (GOOGLE_PLAY_PILOT_ACTIVE), global flag OFF
+// ---------------------------------------------------------------------------
+
+describe("pilot mode (FV-669): pilot flag on, global flag off", () => {
+  const allowlist = (payer = PAYER) => tables.google_license_testers!.push({ payer_id: payer });
+
+  beforeEach(() => {
+    delete process.env.GOOGLE_PLAY_CATALOG_ACTIVE;
+    process.env.GOOGLE_PLAY_PILOT_ACTIVE = "1";
+  });
+  afterEach(() => {
+    delete process.env.GOOGLE_PLAY_PILOT_ACTIVE;
+  });
+
+  it("both flags unset or pilot not exactly \"1\": authenticated 2xx no-op, no Google or database call", async () => {
+    for (const value of [undefined, "", "0", "true", " 1"]) {
+      if (value === undefined) delete process.env.GOOGLE_PLAY_PILOT_ACTIVE;
+      else process.env.GOOGLE_PLAY_PILOT_ACTIVE = value;
+      allowlist();
+      googleReturns(SENTINEL_TOKEN, { accountId: BINDING_ID, testPurchase: true });
+      expect(await push(subNote())).toBe(200);
+    }
+    expect(fetchCalls).toEqual([]);
+    expect(createServiceCalls).toBe(0);
+    expect(subRows()).toEqual([]);
+  });
+
+  it("pilot still rejects an unauthenticated push", async () => {
+    expect(await push(subNote(), null)).toBe(401);
+  });
+
+  it("allowlisted payer, bound TEST purchase, no row yet: written and acknowledged", async () => {
+    allowlist();
+    googleReturns(SENTINEL_TOKEN, { accountId: BINDING_ID, testPurchase: true });
+    expect(await push(subNote())).toBe(200);
+    expect(rowFor(SENTINEL_TOKEN)).toMatchObject({ payer_id: PAYER, is_test_purchase: true });
+    expect(events).toContain("ack");
+  });
+
+  it("allowlisted payer, bound REAL purchase: 2xx, no row, never acknowledged", async () => {
+    allowlist();
+    googleReturns(SENTINEL_TOKEN, { accountId: BINDING_ID });
+    expect(await push(subNote())).toBe(200);
+    expect(subRows()).toEqual([]);
+    expect(events).not.toContain("ack");
+  });
+
+  it("NON-allowlisted payer, bound TEST purchase: 2xx, no row, never acknowledged", async () => {
+    googleReturns(SENTINEL_TOKEN, { accountId: BINDING_ID, testPurchase: true });
+    expect(await push(subNote())).toBe(200);
+    expect(subRows()).toEqual([]);
+    expect(events).not.toContain("ack");
+  });
+
+  it("unresolvable payer (unbound account id): 2xx no-op", async () => {
+    allowlist();
+    googleReturns(SENTINEL_TOKEN, { accountId: OTHER_BINDING, testPurchase: true });
+    expect(await push(subNote())).toBe(200);
+    expect(subRows()).toEqual([]);
+    expect(events).not.toContain("ack");
+  });
+
+  it("owned row of a NON-allowlisted payer: 2xx, no Google call, row untouched, not acknowledged", async () => {
+    seedRow({ status: "active", acknowledged: false, is_test_purchase: true });
+    googleReturns(SENTINEL_TOKEN, { state: "SUBSCRIPTION_STATE_EXPIRED", expiryTime: PAST, testPurchase: true });
+    expect(await push(subNote())).toBe(200);
+    expect(fetchCalls).toEqual([]);
+    expect(rowFor(SENTINEL_TOKEN)).toMatchObject({ status: "active", acknowledged: false });
+    expect(events).toEqual([]);
+  });
+
+  it("a void for an owned row of a NON-allowlisted payer is a no-op too (no Google call, row untouched)", async () => {
+    seedRow({ status: "active" });
+    expect(await push(voidNote())).toBe(200);
+    expect(fetchCalls).toEqual([]);
+    expect(rowFor(SENTINEL_TOKEN)?.status).toBe("active");
+  });
+
+  it("owned row of an allowlisted payer + TEST purchase: refreshed from Google", async () => {
+    allowlist();
+    seedRow({ status: "active", is_test_purchase: true });
+    googleReturns(SENTINEL_TOKEN, { state: "SUBSCRIPTION_STATE_EXPIRED", expiryTime: PAST, testPurchase: true, acknowledged: true });
+    expect(await push(subNote())).toBe(200);
+    expect(rowFor(SENTINEL_TOKEN)?.status).toBe("expired");
+  });
+
+  it("owned row of an allowlisted payer but Google now says REAL: not refreshed, not acknowledged", async () => {
+    allowlist();
+    seedRow({ status: "active", acknowledged: false });
+    googleReturns(SENTINEL_TOKEN, { state: "SUBSCRIPTION_STATE_EXPIRED", expiryTime: PAST });
+    expect(await push(subNote())).toBe(200);
+    expect(rowFor(SENTINEL_TOKEN)).toMatchObject({ status: "active", acknowledged: false });
+    expect(events).not.toContain("ack");
+  });
+
+  it("allowlist lookup error: nothing is processed and nothing acknowledged (retryable 500)", async () => {
+    allowlist();
+    googleReturns(SENTINEL_TOKEN, { accountId: BINDING_ID, testPurchase: true });
+    dbFault = { table: "google_license_testers", op: "select" };
+    expect(await push(subNote())).toBe(500);
+    expect(subRows()).toEqual([]);
+    expect(events).not.toContain("ack");
+  });
+
+  it("allowlist lookup error on an owned row: nothing processed, no Google call", async () => {
+    seedRow({ status: "active", is_test_purchase: true });
+    dbFault = { table: "google_license_testers", op: "select" };
+    expect(await push(subNote())).toBe(500);
+    expect(fetchCalls).toEqual([]);
+    expect(rowFor(SENTINEL_TOKEN)?.status).toBe("active");
+  });
+
+  it("global flag ON (pilot also set): existing behavior, a real purchase for a non-allowlisted payer is written", async () => {
+    process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
+    googleReturns(SENTINEL_TOKEN, { accountId: BINDING_ID });
+    expect(await push(subNote())).toBe(200);
+    expect(rowFor(SENTINEL_TOKEN)).toMatchObject({ payer_id: PAYER, is_test_purchase: false });
+  });
+});

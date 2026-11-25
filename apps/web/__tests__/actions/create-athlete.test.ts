@@ -18,7 +18,7 @@
  * redirect("/dashboard") after a successful insert.
  */
 
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Module mocks (declared before any import of the module under test)
@@ -123,6 +123,7 @@ vi.mock("@/lib/monitoring/notify", () => ({
 let profileInsertPayload: Record<string, unknown> | null = null;
 let profileInsertError: { message: string } | null = null;
 let linkInsertError: { message: string } | null = null;
+let pilotTesterRow: { payer_id: string } | null = null;
 
 function makeServiceMock() {
   return {
@@ -154,6 +155,16 @@ function makeServiceMock() {
           // capacity gate) uses .select(..., { count, head }).eq(...).
           select: () => ({
             eq: async () => ({ count: 0, error: null }),
+          }),
+        };
+      }
+      // FV-669: the pilot allowlist lookup (google_license_testers).
+      if (table === "google_license_testers") {
+        return {
+          select: () => ({
+            eq: () => ({
+              maybeSingle: async () => ({ data: pilotTesterRow, error: null }),
+            }),
           }),
         };
       }
@@ -593,4 +604,47 @@ describe("createAthlete — android-play shell guard (FV-659)", () => {
       expect(syncAthleteQuantityMock).not.toHaveBeenCalled();
     },
   );
+});
+
+describe("createAthlete — account-only Play pilot (FV-669)", () => {
+  beforeEach(() => {
+    process.env.GOOGLE_PLAY_PILOT_ACTIVE = "1";
+    pilotTesterRow = null;
+    shellCapabilityMock.mockReturnValue("android-play");
+  });
+  afterEach(() => {
+    delete process.env.GOOGLE_PLAY_PILOT_ACTIVE;
+    pilotTesterRow = null;
+  });
+
+  it("pilot on, payer NOT allowlisted: website guidance, no athlete created, no Stripe", async () => {
+    const result = await createAthlete(null, makeFormData());
+    expect(result).toEqual({
+      ok: false,
+      error: "Add athletes from a web browser at fromvictoryapp.com.",
+    });
+    expect(profileInsertPayload).toBeNull();
+    expect(syncAthleteQuantityMock).not.toHaveBeenCalled();
+    expect(getTrialConversionStateMock).not.toHaveBeenCalled();
+  });
+
+  it("pilot on, allowlisted payer, not_entitled: allowed, no Stripe sync", async () => {
+    pilotTesterRow = { payer_id: "parent-1" };
+    await expect(createAthlete(null, makeFormData())).rejects.toThrow("NEXT_REDIRECT");
+    expect(profileInsertPayload).not.toBeNull();
+    expect(syncAthleteQuantityMock).not.toHaveBeenCalled();
+    expect(getTrialConversionStateMock).not.toHaveBeenCalled();
+  });
+
+  it("pilot flag not exactly \"1\": website guidance and no allowlist lookup", async () => {
+    process.env.GOOGLE_PLAY_PILOT_ACTIVE = "true";
+    pilotTesterRow = { payer_id: "parent-1" };
+    const result = await createAthlete(null, makeFormData());
+    expect(result).toEqual({
+      ok: false,
+      error: "Add athletes from a web browser at fromvictoryapp.com.",
+    });
+    expect(lastServiceMockInstance).toBeNull();
+    expect(profileInsertPayload).toBeNull();
+  });
 });
