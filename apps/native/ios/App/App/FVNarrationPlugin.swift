@@ -3,6 +3,7 @@ import Capacitor
 import Foundation
 import MediaPlayer
 import WebKit
+import os
 
 /// App-local playback of the assembled narration WAV. No music-provider access:
 /// the system mixes our narration with whatever the athlete already plays.
@@ -42,6 +43,15 @@ public class FVNarrationPlugin: CAPPlugin, CAPBridgedPlugin, AVAudioPlayerDelega
     private static let allowedTitles: Set<String> = ["Pregame", "Pre-Practice"]
     private var nowPlayingTitle = "From Victory"
     private var remoteTargets: [(MPRemoteCommand, Any)] = []
+    // AVAudioPlayer rewinds to zero when it reports a finish, and it reports one
+    // when wired CarPlay is unplugged mid-reading. So the plugin keeps its own
+    // playhead: a clock anchor while playing, a held position otherwise.
+    private var playAnchor: (position: Double, at: TimeInterval)?
+    private var heldPosition: Double = 0
+    private static let logger = os.Logger(
+        subsystem: Bundle.main.bundleIdentifier ?? "app",
+        category: "narration"
+    )
 
     public override func load() {
         // A force-quit bypasses deinit. Sweep only this plugin's generated
@@ -84,6 +94,7 @@ public class FVNarrationPlugin: CAPPlugin, CAPBridgedPlugin, AVAudioPlayerDelega
             guard let self, self.sessionId != nil else { return }
             self.player?.stop()
             self.player = nil
+            self.playAnchor = nil
             self.ownsAudioSession = false
             self.state = "error"
             self.failure = "Audio became unavailable. Start the session again."
@@ -177,6 +188,8 @@ public class FVNarrationPlugin: CAPPlugin, CAPBridgedPlugin, AVAudioPlayerDelega
                 player.delegate = self
                 player.volume = Float(self.volume)
                 self.player = player
+                self.playAnchor = nil
+                self.heldPosition = 0
                 self.state = "ready"
                 if let title = call.getString("title"), Self.allowedTitles.contains(title) {
                     self.nowPlayingTitle = title
@@ -279,6 +292,22 @@ public class FVNarrationPlugin: CAPPlugin, CAPBridgedPlugin, AVAudioPlayerDelega
     public func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
         DispatchQueue.main.async {
             guard player === self.player, self.state != "ended" else { return }
+            let outcome = NarrationFinish.classify(successfully: flag, position: self.playhead,
+                                                   duration: player.duration)
+            if case .paused(let position) = outcome {
+                // Not the end: the system stopped the player early (wired CarPlay
+                // unplugged). Hold the spot so the athlete's Play tap resumes there.
+                self.playAnchor = nil
+                self.heldPosition = position
+                player.currentTime = position
+                self.state = "paused"
+                self.deactivateAudioSession()
+                Self.logger.info("finish reported at \(position, privacy: .public)s of \(player.duration, privacy: .public)s; holding as a pause")
+                self.emitState("system")
+                return
+            }
+            Self.logger.info("finish reported at \(self.playhead, privacy: .public)s of \(player.duration, privacy: .public)s; \(flag ? "ended" : "failed", privacy: .public)")
+            self.playAnchor = nil
             self.state = flag ? "ended" : "error"
             if !flag { self.failure = "Narration playback failed." }
             self.deactivateAudioSession()
@@ -307,8 +336,20 @@ public class FVNarrationPlugin: CAPPlugin, CAPBridgedPlugin, AVAudioPlayerDelega
         return state == "ended" ? duration : (player?.currentTime ?? 0)
     }
 
+    /// Where the reading is by the plugin's own clock. Use this, not
+    /// `player.currentTime`, once the system may have stopped the player.
+    private var playhead: Double {
+        guard let anchor = playAnchor else { return heldPosition }
+        let duration: Double = player?.duration ?? 0
+        return min(duration, anchor.position + max(0, ProcessInfo.processInfo.systemUptime - anchor.at))
+    }
+
     private func pauseForInterruption(_ reason: String) {
         guard state == "playing" else { return }
+        // Take the spot before pausing. A player the system already stopped may
+        // have rewound, so only trust its own time while it is still playing.
+        if let player, player.isPlaying { heldPosition = player.currentTime } else { heldPosition = playhead }
+        playAnchor = nil
         player?.pause()
         state = "paused"
         // Never auto-resume after calls or unplugging headphones. The athlete
@@ -334,10 +375,13 @@ public class FVNarrationPlugin: CAPPlugin, CAPBridgedPlugin, AVAudioPlayerDelega
             try session.setActive(true)
             ownsAudioSession = true
             guard player.play() else { throw CocoaError(.fileReadUnknown) }
+            playAnchor = (player.currentTime, ProcessInfo.processInfo.systemUptime)
             state = "playing"
             emitState(reason)
             return true
         } catch {
+            if playAnchor != nil { heldPosition = playhead }
+            playAnchor = nil
             player.pause()
             state = "paused"
             deactivateAudioSession()
@@ -354,6 +398,8 @@ public class FVNarrationPlugin: CAPPlugin, CAPBridgedPlugin, AVAudioPlayerDelega
         if target >= player.duration {
             player.stop()
             player.currentTime = player.duration
+            Self.logger.info("ended by seek to the end (\(reason, privacy: .public))")
+            playAnchor = nil
             state = "ended"
             deactivateAudioSession()
             emitState("ended")
@@ -361,6 +407,11 @@ public class FVNarrationPlugin: CAPPlugin, CAPBridgedPlugin, AVAudioPlayerDelega
             return true
         }
         player.currentTime = target
+        if playAnchor != nil {
+            playAnchor = (target, ProcessInfo.processInfo.systemUptime)
+        } else {
+            heldPosition = target
+        }
         emitState(reason)
         return true
     }
@@ -450,6 +501,8 @@ public class FVNarrationPlugin: CAPPlugin, CAPBridgedPlugin, AVAudioPlayerDelega
     private func fail(_ message: String) {
         player?.stop()
         player = nil
+        playAnchor = nil
+        heldPosition = 0
         try? writer?.close()
         writer = nil
         if let url = fileURL { try? FileManager.default.removeItem(at: url) }
@@ -464,6 +517,8 @@ public class FVNarrationPlugin: CAPPlugin, CAPBridgedPlugin, AVAudioPlayerDelega
     private func cleanUp() {
         player?.stop()
         player = nil
+        playAnchor = nil
+        heldPosition = 0
         try? writer?.close()
         writer = nil
         if let url = fileURL { try? FileManager.default.removeItem(at: url) }

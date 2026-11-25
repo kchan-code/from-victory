@@ -10,6 +10,7 @@
 		FA600001AAA1BBB2CCC3D002 /* FVNarrationPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA600001AAA1BBB2CCC3D001 /* FVNarrationPlugin.swift */; };
 		FA675001AAA1BBB2CCC3D002 /* FVAuthPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA675001AAA1BBB2CCC3D001 /* FVAuthPlugin.swift */; };
 		FA718001AAA1BBB2CCC3D002 /* OfflineEntryFallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA718001AAA1BBB2CCC3D001 /* OfflineEntryFallback.swift */; };
+		FA784A01AAA1BBB2CCC3D002 /* NarrationFinish.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA784A01AAA1BBB2CCC3D001 /* NarrationFinish.swift */; };
 		FA718002AAA1BBB2CCC3D002 /* FVOfflineNavigationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA718002AAA1BBB2CCC3D001 /* FVOfflineNavigationDelegate.swift */; };
 		FA721001AAA1BBB2CCC3D002 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = FA721001AAA1BBB2CCC3D001 /* PrivacyInfo.xcprivacy */; };
 		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
@@ -28,6 +29,7 @@
 /* Begin PBXFileReference section */
 		FA675001AAA1BBB2CCC3D001 /* FVAuthPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FVAuthPlugin.swift; sourceTree = "<group>"; };
 		FA718001AAA1BBB2CCC3D001 /* OfflineEntryFallback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineEntryFallback.swift; sourceTree = "<group>"; };
+		FA784A01AAA1BBB2CCC3D001 /* NarrationFinish.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NarrationFinish.swift; sourceTree = "<group>"; };
 		FA718002AAA1BBB2CCC3D001 /* FVOfflineNavigationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FVOfflineNavigationDelegate.swift; sourceTree = "<group>"; };
 		FA721001AAA1BBB2CCC3D001 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		FA600001AAA1BBB2CCC3D001 /* FVNarrationPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FVNarrationPlugin.swift; sourceTree = "<group>"; };
@@ -99,6 +101,7 @@
 				FA675001AAA1BBB2CCC3D001 /* FVAuthPlugin.swift */,
 				FA573001AAA1BBB2CCC3D003 /* FVBridgeViewController.swift */,
 				FA718001AAA1BBB2CCC3D001 /* OfflineEntryFallback.swift */,
+				FA784A01AAA1BBB2CCC3D001 /* NarrationFinish.swift */,
 				FA718002AAA1BBB2CCC3D001 /* FVOfflineNavigationDelegate.swift */,
 				FA721001AAA1BBB2CCC3D001 /* PrivacyInfo.xcprivacy */,
 				504EC30B1FED79650016851F /* Main.storyboard */,
@@ -243,6 +246,7 @@
 				FA675001AAA1BBB2CCC3D002 /* FVAuthPlugin.swift in Sources */,
 				FA573001AAA1BBB2CCC3D004 /* FVBridgeViewController.swift in Sources */,
 				FA718001AAA1BBB2CCC3D002 /* OfflineEntryFallback.swift in Sources */,
+				FA784A01AAA1BBB2CCC3D002 /* NarrationFinish.swift in Sources */,
 				FA718002AAA1BBB2CCC3D002 /* FVOfflineNavigationDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
